@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="moveis" content="Фильмы">
+  <title>Онлайн кинотеатр Kino</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script type="module" src="js/app.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js" defer></script>
+  <script type="module" src="js/movies-list.js"></script>
+
+</head>
+
+<body>
+  <header>
+    <div class="header_top">
+      <div class="logo-and-title">
+        <a href="index.html"><img src="img/logo.png" alt="logo"></a>
+        <h1>Kino</h1>
+      </div>
+
+      <form class="search-stroke" action="/search">
+        <input type="search" id="search-input" name="search-input" placeholder="Искать...">
+        <button class="button" type="submit">Поиск</button>
+      </form>
+
+      <nav class="user-menu">
+        <ul>
+          <li><a href="favorites.html">Избранное</a></li>
+          <li><a href="profile.html">Профиль</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <nav class="navigation">
+      <ul>
+        <li><a href="index.html">Главная</a></li>
+        <li><a href="movies.html">Фильмы</a></li>
+        <li><a href="series.html">Сериалы</a></li>
+        <li><a href="subscribe.html">Подписки</a></li>
+        <li><a href="review.html">Рецензии</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="content">
+    <section class="recomended-movies" id="movies-list">
+      <header class="recomended-movies-header">
+        <h2>Каталог фильмов Kino</h2>
+        <p>Выбирайте на свой вкус</p>
+
+        <div class="movies-controls">
+          <input
+                  class="search"
+                  type="text"
+                  placeholder="Поиск"
+          >
+          <button class="button sort" data-sort="movie-title">
+            Сортировать по названию
+          </button>
+        </div>
+      </header>
+
+      <div class="best-movies list">
+        <article class="movie-card">
+          <div class="movie-poster">
+            <img src="img/movies_and_series/1plus1.png" alt="1+1">
+          </div>
+          <div class="movie-info">
+            <h3 class="movie-title">1+1</h3>
+            <em class="movie-meta">2011, драма, Франция, 1ч 52мин</em>
+          </div>
+        </article>
+
+        <article class="movie-card">
+          <div class="movie-poster">
+            <img src="img/movies_and_series/inerstellar.png" alt="interstellar">
+          </div>
+          <div class="movie-info">
+            <h3 class="movie-title">Интерстеллар</h3>
+            <em class="movie-meta">2014, фантастика, США, 2ч 49мин</em>
+          </div>
+        </article>
+
+        <article class="movie-card">
+          <div class="movie-poster">
+            <img src="img/movies_and_series/man.png" alt="джентельмены">
+          </div>
+          <div class="movie-info">
+            <h3 class="movie-title">Джентельмены</h3>
+            <em class="movie-meta">2019, криминал, США, 98 мин</em>
+          </div>
+        </article>
+
+        <article class="movie-card">
+          <div class="movie-poster">
+            <img src="img/movies_and_series/shush.png" alt="шоушенко">
+          </div>
+          <div class="movie-info">
+            <h3 class="movie-title">Побег из Шоушенка</h3>
+            <em class="movie-meta">1994, драма, США, 108 мин</em>
+          </div>
+        </article>
+
+        <article class="movie-card">
+          <div class="movie-poster">
+            <img src="img/movies_and_series/anime.png" alt="унесенные призраками">
+          </div>
+          <div class="movie-info">
+            <h3 class="movie-title">Унесенные призраками</h3>
+            <em class="movie-meta">2001, аниме, Япония, 1ч 52мин</em>
+          </div>
+        </article>
+
+        <article class="movie-card">
+          <div class="movie-poster">
+            <img src="img/movies_and_series/leon.png" alt="леон">
+          </div>
+          <div class="movie-info">
+            <h3 class="movie-title">Леон</h3>
+            <em class="movie-meta">1994, боевик, Франция, 2ч 49мин</em>
+          </div>
+        </article>
+
+        <article class="movie-card">
+          <div class="movie-poster">
+            <img src="img/movies_and_series/shrek.png" alt="shrek">
+          </div>
+          <div class="movie-info">
+            <h3 class="movie-title">Шрек</h3>
+            <em class="movie-meta">2001, мультфильм, США, 98 мин</em>
+          </div>
+        </article>
+
+        <article class="movie-card">
+          <div class="movie-poster">
+            <img src="img/movies_and_series/pmes.png" alt="поймай меня">
+          </div>
+          <div class="movie-info">
+            <h3 class="movie-title">Поймай меня, если сможешь</h3>
+            <em class="movie-meta">2002, биография, США, 108 мин</em>
+          </div>
+        </article>
+
+        <article class="movie-card">
+          <div class="movie-poster">
+            <img src="img/greenbook.png" alt="зеленая книга">
+          </div>
+          <div class="movie-info">
+            <h3 class="movie-title">Зеленая книга</h3>
+            <em class="movie-meta">2018, биография, США, 130 мин, 18+</em>
+          </div>
+        </article>
+
+        <article class="movie-card">
+          <div class="movie-poster">
+            <img src="img/forrgump.png" alt="форрест гамп">
+          </div>
+          <div class="movie-info">
+            <h3 class="movie-title">Форрест Гамп</h3>
+            <em class="movie-meta">1994, драма, США, 142 мин, 18+</em>
+          </div>
+        </article>
+
+        <article class="movie-card">
+          <div class="movie-poster">
+            <img src="img/pib.png" alt="люди в черном">
+          </div>
+          <div class="movie-info">
+            <h3 class="movie-title">Люди в черном</h3>
+            <em class="movie-meta">1997, фантастика, США, 98 мин, 12+</em>
+          </div>
+        </article>
+
+        <article class="movie-card">
+          <div class="movie-poster">
+            <img src="img/terminator.png" alt="терминатор">
+          </div>
+          <div class="movie-info">
+            <h3 class="movie-title">Терминатор</h3>
+            <em class="movie-meta">1984, фантастика, США, 108 мин, 18+</em>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-section">
+      <h2>Контакты</h2>
+      <address>
+        Почта: <a>kino@mail.ru</a><br>
+        Телефон: <a>+7 (999) 000-00-00</a>
+      </address>
+    </div>
+
+    <div class="footer-section">
+      <h2>Мы в соцсетях</h2>
+      <nav>
+        <ul>
+          <li><a href="#">ВКонтакте</a></li>
+          <li><a href="#">Telegram</a></li>
+          <li><a href="#">YouTube</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="footer-section">
+      <h2>Информация</h2>
+      <nav>
+        <ul>
+          <li><a href="#about">О нас</a></li>
+          <li><a href="#terms">Условия использования</a></li>
+          <li><a href="#privacy">Политика конфиденциальности</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div id="loadTime" class="loadTime"></div>
+  </footer>
+</body>
+</html>
