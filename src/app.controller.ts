@@ -1,13 +1,16 @@
-import { Controller, Get, Render } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller, Get, Render, Query } from '@nestjs/common';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
 
-  @Get()
+  @Get('mvc')
   @Render('index')
-  root() {
-    return { message: 'Hello world!' };
+  getIndexPage(@Query('auth') auth?: string) {
+    const isAuth = auth === '1';
+    return {
+      isAuth,
+      user: isAuth ? { name: 'Вика' } : null,
+    };
   }
 }
+
