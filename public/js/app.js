@@ -1,6 +1,6 @@
 
-    const normPath = (path) => (!path||path==='/') ? '/index.html' : path.replace(/\/+$/, '');
-    const fileName = (path) => (normPath(path).split('/').pop()||'index.html');
+    const normPath = (path) => (!path||path==='/') ? '/indexfront.html' : path.replace(/\/+$/, '');
+    const fileName = (path) => (normPath(path).split('/').pop()||'indexfront.html');
 
     const navigationClick = () => {
         const nav = document.querySelector('.navigation');
