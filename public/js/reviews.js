@@ -2,6 +2,7 @@ import {notifyError, notifySuccess} from "./notifications.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const form= document.getElementById("review-form");
+    if (!form) return;
     const list= document.getElementById("reviews-list");
     const template= document.getElementById("review-template");
 

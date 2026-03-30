@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  {{> head}}
+</head>
+<body>
+{{> header}}
+
+<main>
+  <section class="profile-section">
+    <header class="profile-section-header">
+      <h2>Мой профиль</h2>
+    </header>
+
+    <article class="profile-card">
+      <div class="profile-header">
+        <div class="profile-image">
+          <img src="img/avatar.png" alt="аватарка">
+          <a class="profile-image">Изменить</a>
+        </div>
+
+        <div class="profile-description">
+          <h3>Виктория Алексеева</h3>
+          <p>vika@mail.ru</p>
+        </div>
+
+        <div class="profile-subscribe">
+          <div class="profile-subscribe-header">
+            <h4>Моя подписка</h4>
+            <span class="subscription-status">Активна</span>
+          </div>
+          <p>Тариф: <strong>Я в прайме</strong></p>
+          <p>Действует до: 1 апреля 2026</p>
+          <div class="action-buttons">
+            <a href="subscribe.html" class="button">Управление подпиской</a>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+</main>
+
+{{> footer}}
+{{> scripts}}
+</body>
+</html>
