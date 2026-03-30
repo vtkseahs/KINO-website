@@ -1,9 +1,13 @@
-<div class="session">
-  {{#if isAuth}}
-    <span>Вы вошли как {{user.name}}</span>
-    <a href="/?auth=0">Выйти</a>
-  {{else}}
-    <a href="/?auth=1">Войти</a>
-    <a href="#">Регистрация</a>
-  {{/if}}
-</div>
+<nav class="user-menu">
+  <ul>
+    <li><a href="{{#if isAuth}}/favorites?auth=1{{else}}/favorites{{/if}}">Избранное</a></li>
+
+    {{#if isAuth}}
+      <li><a href="{{#if isAuth}}/profile?auth=1{{else}}/profile{{/if}}">Профиль: {{user.name}}</a></li>
+      <li><a href="/?auth=0">Выйти</a></li>
+    {{else}}
+      <li><a href="/?auth=1">Войти</a></li>
+      <li><a href="#">Регистрация</a></li>
+    {{/if}}
+  </ul>
+</nav>

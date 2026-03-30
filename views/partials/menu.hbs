@@ -1,7 +1,9 @@
-<nav>
-  <a href="/">Главная</a>
-  <a href="/movies.html">Фильмы</a>
-  <a href="/series.html">Сериалы</a>
-  <a href="/subscribe.html">Подписки</a>
-  <a href="/review.html">Рецензии</a>
+<nav class="navigation">
+  <ul>
+    <li><a href="{{#if isAuth}}/?auth=1{{else}}/{{/if}}" class="nav-active">Главная</a></li>
+    <li><a href="{{#if isAuth}}/movies?auth=1{{else}}/movies{{/if}}">Фильмы</a></li>
+    <li><a href="{{#if isAuth}}/series?auth=1{{else}}/series{{/if}}">Сериалы</a></li>
+    <li><a href="{{#if isAuth}}/subscribe?auth=1{{else}}/subscribe{{/if}}">Подписки</a></li>
+    <li><a href="{{#if isAuth}}/review?auth=1{{else}}/review{{/if}}">Рецензии</a></li>
+  </ul>
 </nav>

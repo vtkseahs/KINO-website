@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  {{> head}}
+</head>
+<body>
+{{> header}}
+
+<main>
+  <section class="favorites-movies">
+    <header class="favorites-movies-header">
+      <h2>Избранное</h2>
+      <p>Тут собраны ваши любимые фильмы и сериалы</p>
+    </header>
+
+    <div class="favorites-movies-card">
+      {{#each cards}}
+        {{> card}}
+      {{/each}}
+    </div>
+  </section>
+</main>
+
+{{> footer}}
+{{> scripts}}
+</body>
+</html>
