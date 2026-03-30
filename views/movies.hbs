@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  {{> head}}
+</head>
+<body>
+{{> header}}
+
+<main class="content">
+  <section class="recomended-movies" id="movies-list">
+    <header class="recomended-movies-header">
+      <h2>Каталог фильмов Kino</h2>
+      <p>Выбирайте на свой вкус</p>
+
+      <div class="movies-controls">
+        <input class="search" type="text" placeholder="Поиск">
+        <button class="button sort" data-sort="movie-title">
+          Сортировать по названию
+        </button>
+      </div>
+    </header>
+
+    <div class="best-movies list">
+      {{#each cards}}
+        {{> card}}
+      {{/each}}
+    </div>
+  </section>
+</main>
+
+{{> footer}}
+{{> scripts}}
+</body>
+</html>

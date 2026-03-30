@@ -1,6 +1,6 @@
 
-    const normPath = (path) => (!path||path==='/') ? '/indexfront.html' : path.replace(/\/+$/, '');
-    const fileName = (path) => (normPath(path).split('/').pop()||'indexfront.html');
+    const normPath = (path) => (!path||path==='/') ? '/' : path.replace(/\/+$/, '');
+    const fileName = (path) => (normPath(path).split('/').pop()||'/');
 
     const navigationClick = () => {
         const nav = document.querySelector('.navigation');
@@ -43,10 +43,10 @@
 
 
     window.addEventListener("load", () => {
-        const [time] = window.performance.getEntries();
+        const navEntry = performance.getEntriesByType("navigation")[0];
         const box = document.getElementById("loadTime");
-        if (box) {
-            box.innerText = `Страница загрузилась за ${time.loadEventStart - time.startTime} мс`;
+        if (box && navEntry) {
+            box.innerText = `Страница загрузилась за ${Math.round(navEntry.loadEventEnd)} мс`;
         }
     });
 
