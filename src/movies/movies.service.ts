@@ -46,15 +46,12 @@ export class MoviesService {
     if (!movie) {
       throw new NotFoundException(`Фильм с id=${id} не найден`);
     }
-
     return movie;
   }
 
   async findGenres() {
     return this.prisma.genre.findMany({
-      orderBy: {
-        name: 'asc',
-      },
+      orderBy: { name: 'asc', },
     });
   }
 

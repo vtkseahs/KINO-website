@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException, } from '@nestjs/common';
+import {ConflictException, Injectable, NotFoundException, } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
@@ -69,14 +69,7 @@ export class FavoritesService {
         if (error.code === 'P2002') {
           throw new ConflictException('Этот фильм уже есть в избранном');
         }
-
-        if (error.code === 'P2003') {
-          throw new BadRequestException(
-            'Нельзя добавить в избранное: пользователь или фильм не существует',
-          );
-        }
       }
-
       throw error;
     }
   }
@@ -96,14 +89,7 @@ export class FavoritesService {
         if (error.code === 'P2002') {
           throw new ConflictException('Этот фильм уже есть в избранном');
         }
-
-        if (error.code === 'P2003') {
-          throw new BadRequestException(
-            'Нельзя изменить избранное: фильм не существует',
-          );
-        }
       }
-
       throw error;
     }
   }
