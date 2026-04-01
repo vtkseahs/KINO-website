@@ -9,13 +9,13 @@ datasource db {
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
-  email     String     @unique
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
   name      String
   password  String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  role      Role       @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  role      Role     @default(USER)
 
   reviews   Review[]
   favorites Favorite[]
@@ -26,25 +26,25 @@ model Genre {
   name      String   @unique
   createdAt DateTime @default(now())
 
-  movies    Movie[]
+  movies Movie[]
 }
 
 model Movie {
-  id          Int        @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   title       String
   description String
   year        Int
   duration    Int
   ageRating   String
   posterUrl   String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  genreId     Int
-  genre       Genre      @relation(fields: [genreId], references: [id])
+  genreId Int
+  genre   Genre @relation(fields: [genreId], references: [id])
 
-  reviews     Review[]
-  favorites   Favorite[]
+  reviews   Review[]
+  favorites Favorite[]
 }
 
 model Review {
@@ -54,11 +54,11 @@ model Review {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userId    Int
-  movieId   Int
+  userId  Int
+  movieId Int
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
   @@unique([userId, movieId])
 }
@@ -67,11 +67,11 @@ model Favorite {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
 
-  userId    Int
-  movieId   Int
+  userId  Int
+  movieId Int
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
   @@unique([userId, movieId])
 }

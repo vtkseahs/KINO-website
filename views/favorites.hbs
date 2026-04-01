@@ -10,12 +10,31 @@
   <section class="favorites-movies">
     <header class="favorites-movies-header">
       <h2>Избранное</h2>
-      <p>Тут собраны ваши любимые фильмы и сериалы</p>
+      <p>Список фильмов, добавленных в избранное</p>
+      <a href="/favorites/add" class="button">Добавить в избранное</a>
     </header>
 
     <div class="favorites-movies-card">
-      {{#each cards}}
-        {{> card}}
+      {{#each favorites}}
+        <article class="movie-card">
+          <div class="movie-poster">
+            <img src="{{this.movie.posterUrl}}" alt="{{this.movie.title}}">
+          </div>
+
+          <div class="movie-info">
+            <h3>{{this.movie.title}}</h3>
+            <em>
+              {{this.movie.year}}, {{this.movie.genre.name}},
+              {{this.movie.duration}} мин, {{this.movie.ageRating}}
+            </em>
+
+            <div class="movie-actions">
+              <a href="/favorites/{{this.id}}" class="button">Открыть запись</a>
+            </div>
+          </div>
+        </article>
+      {{else}}
+        <p>В избранном пока ничего нет</p>
       {{/each}}
     </div>
   </section>

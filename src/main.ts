@@ -10,6 +10,9 @@ async function bootstrap() {
   app.setBaseViewsDir(join(process.cwd(), 'views'));
   app.setViewEngine('hbs');
   hbs.registerPartials(join(process.cwd(), 'views', 'partials'));
+  hbs.registerHelper('ifEquals', function (a, b, options) {
+    return a === b ? options.fn(this) : options.inverse(this);
+  });
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

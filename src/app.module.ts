@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { MovieController } from './movie.controller';
-import { FavoritesController } from './favorites.controller';
-import {ProfileController} from './profile.controller';
-import { SeriesController } from './series.controller';
-import {SubscribeController} from './subscribe.controller';
-import {ReviewController} from './review.controller';
 import { AppService } from './app.service';
 
+import { MoviesModule } from './movies/movies.module';
+import { FavoritesModule } from './favorites/favorites.module';
+import { ProfileModule } from './profile/profile.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { PrismaModule } from './prisma/prisma.module';
+import {SubscribeController} from './subscribe.controller';
 @Module({
-  imports: [],
-  controllers: [AppController, MovieController, FavoritesController, SeriesController, ProfileController, SubscribeController, ReviewController],
+  imports: [MoviesModule, FavoritesModule, ProfileModule, ReviewsModule,PrismaModule,],
+  controllers: [AppController, SubscribeController],
   providers: [AppService],
 })
 export class AppModule {}

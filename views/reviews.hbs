@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  {{> head}}
+</head>
+<body>
+{{> header}}
+
+<main>
+  <section class="reviews-list-section">
+    <div class="page-header">
+      <h2>Отзывы пользователей</h2>
+    </div>
+
+    <a href="/reviews/add" class="button">Добавить отзыв</a>
+
+    <div class="faq-list" style="margin-top: 20px;">
+      {{#each reviews}}
+        <article class="faq-item">
+          <h3>{{this.movie.title}}</h3>
+          <p><strong>Автор:</strong> {{this.user.name}}</p>
+          <p><strong>Оценка:</strong> {{this.rating}}/10</p>
+          <p><strong>Текст:</strong> {{this.comment}}</p>
+
+          <div class="movie-actions" style="margin-top: 12px;">
+            <a href="/reviews/{{this.id}}" class="button">Открыть</a>
+            <a href="/reviews/{{this.id}}/edit" class="button button--secondary">Редактировать</a>
+          </div>
+        </article>
+      {{else}}
+        <p>Отзывов пока нет.</p>
+      {{/each}}
+    </div>
+  </section>
+</main>
+
+{{> footer}}
+{{> scripts}}
+</body>
+</html>

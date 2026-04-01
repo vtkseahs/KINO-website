@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  {{> head}}
+</head>
+<body>
+{{> header}}
+
+<main class="content">
+  <section class="movie-page">
+    <h2>Избранное: {{favorite.movie.title}}</h2>
+
+    <div class="movie-card-full">
+      <div class="movie-poster-full">
+        <img src="{{favorite.movie.posterUrl}}" alt="{{favorite.movie.title}}">
+      </div>
+
+      <div class="movie-info movie-info-full">
+        <p><strong>Фильм:</strong> {{favorite.movie.title}}</p>
+        <p><strong>Год:</strong> {{favorite.movie.year}}</p>
+        <p><strong>Жанр:</strong> {{favorite.movie.genre.name}}</p>
+        <p><strong>Длительность:</strong> {{favorite.movie.duration}} мин</p>
+        <p><strong>Возрастной рейтинг:</strong> {{favorite.movie.ageRating}}</p>
+      </div>
+    </div>
+
+    <div class="movie-actions">
+      <a href="/favorites/{{favorite.id}}/edit" class="button">Редактировать</a>
+
+      <form action="/favorites/{{favorite.id}}/delete" method="POST">
+        <button type="submit">Удалить</button>
+      </form>
+
+      <a href="/favorites" class="button button--secondary">Назад к списку</a>
+    </div>
+  </section>
+</main>
+
+{{> footer}}
+{{> scripts}}
+</body>
+</html>

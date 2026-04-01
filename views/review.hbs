@@ -6,51 +6,26 @@
 <body>
 {{> header}}
 
-<main>
-  <section class="reviews-section">
-    <h2>Добавить рецензию</h2>
+<main class="content">
+  <section class="movie-page">
+    <h2>Отзыв на фильм {{review.movie.title}}</h2>
 
-    <form id="review-form" class="review-form">
-      <label>
-        Ваше имя:
-        <input type="text" id="review-author" name="author" required>
-      </label>
-
-      <label>
-        Email:
-        <input id="review-email" name="email" required>
-      </label>
-
-      <label>
-        Название фильма/сериала:
-        <input type="text" id="review-title" name="title" required>
-      </label>
-
-      <label>
-        Текст рецензии:
-        <textarea id="review-text" name="text" required></textarea>
-      </label>
-
-      <button type="submit" class="button">Добавить</button>
-    </form>
-  </section>
-
-  <section class="reviews-list-section">
-    <h2>Рецензии пользователей</h2>
-    <div id="loader" class="loader hidden"></div>
-    <div id="error-message" class="error-message hidden"></div>
-    <div id="reviews-list"></div>
-  </section>
-
-  <template id="review-template">
-    <div class="review-item">
-      <h3 class="review-title"></h3>
-      <p class="review-author"></p>
-      <p class="review-text"></p>
-
-      <button class="edit-button">Редактировать</button>
+    <div class="profile-card">
+      <p><strong>Автор:</strong> {{review.user.name}}</p>
+      <p><strong>Оценка:</strong> {{review.rating}}/10</p>
+      <p><strong>Текст отзыва:</strong> {{review.comment}}</p>
     </div>
-  </template>
+
+    <div class="movie-actions">
+      <a href="/reviews/{{review.id}}/edit" class="button">Редактировать</a>
+
+      <form action="/reviews/{{review.id}}/delete" method="POST">
+        <button type="submit">Удалить</button>
+      </form>
+
+      <a href="/reviews" class="button button--secondary">Назад к списку</a>
+    </div>
+  </section>
 </main>
 
 {{> footer}}

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  {{> head}}
+</head>
+<body>
+{{> header}}
+
+<main class="content">
+  <section class="movie-form-page">
+    <h2>{{title}}</h2>
+
+    <form action="{{formAction}}" method="POST">
+      <div>
+        <label>Название</label>
+        <input type="text" name="title" value="{{movie.title}}" required>
+      </div>
+
+      <div>
+        <label>Описание</label>
+        <textarea name="description" required>{{movie.description}}</textarea>
+      </div>
+
+      <div>
+        <label>Год</label>
+        <input type="number" name="year" value="{{movie.year}}" required>
+      </div>
+
+      <div>
+        <label>Длительность</label>
+        <input type="number" name="duration" value="{{movie.duration}}" required>
+      </div>
+
+      <div>
+        <label>Возрастной рейтинг</label>
+        <input type="text" name="ageRating" value="{{movie.ageRating}}" required>
+      </div>
+
+      <div>
+        <label>Постер</label>
+        <input type="text" name="posterUrl" value="{{movie.posterUrl}}">
+      </div>
+
+      <div>
+        <label>Жанр</label>
+        <select name="genreId" required>
+          {{#each genres}}
+            <option value="{{this.id}}"
+              {{#if ../movie}}
+                {{#ifEquals this.id ../movie.genreId}}selected{{/ifEquals}}
+              {{/if}}>
+              {{this.name}}
+            </option>
+          {{/each}}
+        </select>
+      </div>
+
+      <button type="submit">
+        {{#if isEdit}}Сохранить{{else}}Добавить фильм{{/if}}
+      </button>
+    </form>
+
+    <a href="/movies">Назад к каталогу</a>
+  </section>
+</main>
+
+{{> footer}}
+{{> scripts}}
+</body>
+</html>

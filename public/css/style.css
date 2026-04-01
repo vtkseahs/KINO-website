@@ -735,3 +735,82 @@ footer a:hover { color: var(--red); }
     background: red;
 }
 
+.movie-page {
+    display: grid;
+    gap: 24px;
+}
+
+.movie-card-full {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 32px;
+    align-items: start;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+}
+
+.movie-poster-full {
+    width: 100%;
+}
+
+.movie-poster-full img {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    height: auto;
+    border-radius: 14px;
+    object-fit: cover;
+}
+
+.movie-info-full {
+    padding: 0;
+}
+
+.movie-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.movie-actions form {
+    margin: 0;
+}
+
+@media (max-width: 900px) {
+    .movie-card-full {
+        grid-template-columns: 1fr;
+    }
+
+    .movie-poster-full img {
+        max-width: 100%;
+    }
+}
+
+.movies-events {
+    margin: 16px 0 24px;
+    padding: 16px 20px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+}
+
+.movies-events h3 {
+    margin: 0 0 10px;
+    font-size: 18px;
+}
+
+.movies-events ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.movies-events li {
+    margin-bottom: 8px;
+    color: var(--text-sec);
+}
+

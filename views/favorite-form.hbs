@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  {{> head}}
+</head>
+<body>
+{{> header}}
+
+<main class="content">
+  <section class="movie-form-page">
+    <h2>{{title}}</h2>
+
+    <form action="{{formAction}}" method="POST">
+      <div>
+        <label>Фильм</label>
+        <select name="movieId" required>
+          {{#each movies}}
+            <option value="{{this.id}}"
+              {{#if ../favorite}}
+                {{#ifEquals this.id ../favorite.movieId}}selected{{/ifEquals}}
+              {{/if}}>
+              {{this.title}} ({{this.year}})
+            </option>
+          {{/each}}
+        </select>
+      </div>
+
+      <button type="submit">
+        {{#if isEdit}}Сохранить{{else}}Добавить в избранное{{/if}}
+      </button>
+    </form>
+
+    <a href="/favorites" class="button button--secondary">Назад к списку</a>
+  </section>
+</main>
+
+{{> footer}}
+{{> scripts}}
+</body>
+</html>

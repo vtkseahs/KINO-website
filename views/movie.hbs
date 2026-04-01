@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  {{> head}}
+</head>
+<body>
+{{> header}}
+
+<main class="content">
+  <section class="movie-page">
+    <h2>{{movie.title}}</h2>
+
+    <div class="movie-card-full">
+      <div class="movie-poster-full">
+        <img src="{{movie.posterUrl}}" alt="{{movie.title}}">
+      </div>
+
+      <div class="movie-info movie-info-full">
+        <p><strong>Описание:</strong> {{movie.description}}</p>
+        <p><strong>Год:</strong> {{movie.year}}</p>
+        <p><strong>Длительность:</strong> {{movie.duration}} мин</p>
+        <p><strong>Возрастной рейтинг:</strong> {{movie.ageRating}}</p>
+        <p><strong>Жанр:</strong> {{movie.genre.name}}</p>
+      </div>
+    </div>
+
+    <div class="movie-actions">
+      <a href="/movies/{{movie.id}}/edit" class="button">Редактировать</a>
+
+      <form action="/movies/{{movie.id}}/delete" method="POST">
+        <button type="submit" >Удалить</button>
+      </form>
+
+      <a href="/movies" class="button button--secondary">Назад к каталогу</a>
+    </div>
+  </section>
+</main>
+
+{{> footer}}
+{{> scripts}}
+</body>
+</html>
