@@ -10,8 +10,8 @@
   <section class="movie-form-page">
     <h2>{{title}}</h2>
 
-    <form action="{{formAction}}" method="POST">
-      <div>
+    <form action="{{formAction}}" method="POST" class="entity-form">
+      <div class="form-field">
         <label>Фильм</label>
         <select name="movieId" required>
           {{#each movies}}

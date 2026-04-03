@@ -8,23 +8,39 @@
 
 <main class="content">
   <section class="movie-form-page">
-    <h2>{{title}}</h2>
+    <div class="page-header auth-card">
+      <h2>{{title}}</h2>
+      <p>Измените основные данные аккаунта</p>
+    </div>
 
-    <form action="{{formAction}}" method="POST">
-      <div>
-        <label>Имя</label>
-        <input type="text" name="name" value="{{profile.name}}" required>
+    <form action="{{formAction}}" method="POST" class="entity-form auth-card">
+      <div class="form-field">
+        <label for="name">Имя</label>
+        <input
+          id="name"
+          type="text"
+          name="name"
+          value="{{profile.name}}"
+          required
+        >
       </div>
 
-      <div>
-        <label>Email</label>
-        <input type="email" name="email" value="{{profile.email}}" required>
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          name="email"
+          value="{{profile.email}}"
+          required
+        >
       </div>
 
-      <button type="submit">Сохранить</button>
+      <div class="form-actions">
+        <button type="submit" class="button">Сохранить</button>
+        <a href="/profile" class="button button--secondary">Назад к профилю</a>
+      </div>
     </form>
-
-    <a href="/profile?auth=1" class="button button--secondary">Назад к профилю</a>
   </section>
 </main>
 

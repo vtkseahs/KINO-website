@@ -1,101 +1,118 @@
-import { Body, Controller, Get, Param, Post, Query, Render, Res, } from '@nestjs/common';
-import type { Response } from 'express';
+import { Body, Controller, Get, Param, Post, Req, Res,ParseIntPipe } from '@nestjs/common';
 import { FavoritesService } from './favorites.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
+import { AuthService } from '../auth/auth.service';
+import type { Request, Response } from 'express';
 
 @Controller('favorites')
 export class FavoritesController {
-  constructor(private readonly favoritesService: FavoritesService) {}
+  constructor(private readonly favoritesService: FavoritesService, private readonly authService: AuthService) {}
 
   @Get()
-  @Render('favorites')
-  async getFavoritesPage(@Query('auth') auth?: string) {
-    const isAuth = auth === '1';
-    const favorites = await this.favoritesService.findAll();
+  async getFavoritesPage(@Req() req: Request, @Res() res: Response) {
+    const auth = await this.authService.getAuthData(req);
+    if (!auth || !auth.user) return;
 
-    return {
+    const favorites = await this.favoritesService.findAll(auth.user.id);
+
+    return res.render('favorites', {
+      ...auth,
       title: 'Избранное Kino',
-      isAuth,
-      user: isAuth ? { name: 'Вика' } : null,
       favorites,
-    };
+    });
   }
 
   @Get('add')
-  @Render('favorite-form')
-  async getAddFavoritePage(@Query('auth') auth?: string) {
-    const isAuth = auth === '1';
+  async getAddFavoritePage(@Req() req: Request, @Res() res: Response) {
+    const auth = await this.authService.getAuthData(req);
+    if (!auth) return;
+
     const movies = await this.favoritesService.findMovies();
 
-    return {
+    return res.render('favorite-form', {
+      ...auth,
       title: 'Добавить в избранное',
-      isAuth,
-      user: isAuth ? { name: 'Вика' } : null,
       favorite: null,
       movies,
       formAction: '/favorites/add',
       isEdit: false,
-    };
+    });
   }
 
   @Post('add')
   async createFavorite(
+    @Req() req: Request,
     @Body() createFavoriteDto: CreateFavoriteDto,
     @Res() res: Response,
   ) {
-    const favorite = await this.favoritesService.create(createFavoriteDto);
+    const currentUser = await this.authService.requireUser(req);
+    const favorite = await this.favoritesService.create(createFavoriteDto, currentUser.id,);
+
     return res.redirect(`/favorites/${favorite.id}`);
   }
 
   @Get(':id')
-  @Render('favorite')
-  async getFavoritePage(@Param('id') id: string, @Query('auth') auth?: string) {
-    const isAuth = auth === '1';
-    const favorite = await this.favoritesService.findOne(Number(id));
+  async getFavoritePage(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const auth = await this.authService.getAuthData(req);
+    if (!auth || !auth.user) return;
 
-    return {
+    const favorite = await this.favoritesService.findOne(id, auth.user.id);
+
+    return res.render('favorite', {
+      ...auth,
       title: `Избранное: ${favorite.movie.title}`,
-      isAuth,
-      user: isAuth ? { name: 'Вика' } : null,
       favorite,
-    };
+    });
   }
 
   @Get(':id/edit')
-  @Render('favorite-form')
   async getEditFavoritePage(
-    @Param('id') id: string,
-    @Query('auth') auth?: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: Request,
+    @Res() res: Response,
   ) {
-    const isAuth = auth === '1';
-    const favorite = await this.favoritesService.findOne(Number(id));
+    const auth = await this.authService.getAuthData(req);
+    if (!auth || !auth.user) return;
+
+    const favorite = await this.favoritesService.findOne(id, auth.user.id);
     const movies = await this.favoritesService.findMovies();
 
-    return {
+    return res.render('favorite-form', {
+      ...auth,
       title: `Редактировать избранное: ${favorite.movie.title}`,
-      isAuth,
-      user: isAuth ? { name: 'Вика' } : null,
       favorite,
       movies,
       formAction: `/favorites/${favorite.id}/edit`,
       isEdit: true,
-    };
+    });
   }
+
 
   @Post(':id/edit')
   async updateFavorite(
-    @Param('id') id: string,
+    @Req() req: Request,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateFavoriteDto: UpdateFavoriteDto,
     @Res() res: Response,
   ) {
-    await this.favoritesService.update(Number(id), updateFavoriteDto);
+    const currentUser = await this.authService.requireUser(req);
+    await this.favoritesService.update(id, updateFavoriteDto, currentUser.id);
     return res.redirect(`/favorites/${id}`);
   }
 
   @Post(':id/delete')
-  async deleteFavorite(@Param('id') id: string, @Res() res: Response) {
-    await this.favoritesService.remove(Number(id));
+  async deleteFavorite(
+    @Req() req: Request,
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
+    const currentUser = await this.authService.requireUser(req);
+    await this.favoritesService.remove(id, currentUser.id);
     return res.redirect('/favorites');
   }
 }

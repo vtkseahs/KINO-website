@@ -1,13 +1,16 @@
 <nav class="user-menu">
   <ul>
-    <li><a href="{{#if isAuth}}/favorites?auth=1{{else}}/favorites{{/if}}">Избранное</a></li>
-
     {{#if isAuth}}
-      <li><a href="{{#if isAuth}}/profile?auth=1{{else}}/profile{{/if}}">Профиль: {{user.name}}</a></li>
-      <li><a href="/?auth=0">Выйти</a></li>
+      <li><a href="/favorites">Избранное</a></li>
+      <li><a href="/profile">Профиль: {{user.name}}</a></li>
+      <li>
+        <form action="/auth/logout" method="POST" style="display:inline;">
+          <button type="submit">Выйти</button>
+        </form>
+      </li>
     {{else}}
-      <li><a href="/?auth=1">Войти</a></li>
-      <li><a href="#">Регистрация</a></li>
+      <li><a href="/auth/login">Войти</a></li>
+      <li><a href="/auth/register">Регистрация</a></li>
     {{/if}}
   </ul>
 </nav>

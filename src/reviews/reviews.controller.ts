@@ -1,110 +1,126 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-  Render,
-  Res,
-} from '@nestjs/common';
-import type { Response } from 'express';
+import { Body, Controller, Get, Param, Post, Req, Render, Res, ParseIntPipe } from '@nestjs/common';
+import type { Request, Response } from 'express';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { AuthService } from '../auth/auth.service';
 
 @Controller('reviews')
 export class ReviewsController {
-  constructor(private readonly reviewsService: ReviewsService) {}
+  constructor(private readonly reviewsService: ReviewsService, private readonly authService: AuthService,) {}
 
   @Get()
   @Render('reviews')
-  async getReviewsPage(@Query('auth') auth?: string) {
-    const isAuth = auth === '1';
+  async getReviewsPage(@Req() req: Request) {
+    const auth = await this.authService.getAuthData(req);
     const reviews = await this.reviewsService.findAll();
 
     return {
+      ...auth,
       title: 'Отзывы Kino',
-      isAuth,
-      user: isAuth ? { name: 'Вика' } : null,
-      reviews,
+      reviews: reviews.map((review) => ({
+        ...review,
+        canManage: auth.user?.id === review.userId,
+      })),
     };
   }
 
   @Get('add')
-  @Render('review-form')
-  async getAddReviewPage(@Query('auth') auth?: string) {
-    const isAuth = auth === '1';
+  async getAddReviewPage(@Req() req: Request, @Res() res: Response) {
+    const auth = await this.authService.getAuthData(req);
+    if (!auth) return;
+
     const movies = await this.reviewsService.findMovies();
 
-    return {
+    return res.render('review-form', {
+      ...auth,
       title: 'Добавить отзыв',
-      isAuth,
-      user: isAuth ? { name: 'Вика' } : null,
       review: null,
       movies,
       formAction: '/reviews/add',
       isEdit: false,
-    };
+    });
   }
 
   @Post('add')
   async createReview(
+    @Req() req: Request,
     @Body() createReviewDto: CreateReviewDto,
     @Res() res: Response,
   ) {
-    const review = await this.reviewsService.create(createReviewDto);
+    const currentUser = await this.authService.requireUser(req);
+    const review = await this.reviewsService.createForUser(
+      createReviewDto,
+      currentUser.id,
+    );
+
     return res.redirect(`/reviews/${review.id}`);
   }
 
   @Get(':id')
   @Render('review')
-  async getReviewPage(@Param('id') id: string, @Query('auth') auth?: string) {
-    const isAuth = auth === '1';
-    const review = await this.reviewsService.findOne(Number(id));
+  async getReviewPage(
+    @Param('id',ParseIntPipe) id: number,
+    @Req() req: Request,
+  ) {
+    const auth = await this.authService.getAuthData(req);
+    const review = await this.reviewsService.findOne(id);
 
     return {
+      ...auth,
       title: `Отзыв #${review.id}`,
-      isAuth,
-      user: isAuth ? { name: 'Вика' } : null,
-      review,
+      review: {
+        ...review,
+        canManage: auth.user?.id === review.userId,
+      },
     };
   }
 
   @Get(':id/edit')
-  @Render('review-form')
   async getEditReviewPage(
-    @Param('id') id: string,
-    @Query('auth') auth?: string,
+    @Param('id',ParseIntPipe) id: number,
+    @Req() req: Request,
+    @Res() res: Response,
   ) {
-    const isAuth = auth === '1';
-    const review = await this.reviewsService.findOne(Number(id));
+    const auth = await this.authService.getAuthData(req);
+    if (!auth || !auth.user) return;
+
+    const review = await this.reviewsService.findOne(id);
+    if (review.userId !== auth.user.id) {
+      return res.redirect(`/reviews/${id}`);
+    }
     const movies = await this.reviewsService.findMovies();
 
-    return {
+    return res.render('review-form', {
+      ...auth,
       title: `Редактировать отзыв #${review.id}`,
-      isAuth,
-      user: isAuth ? { name: 'Вика' } : null,
       review,
       movies,
       formAction: `/reviews/${review.id}/edit`,
       isEdit: true,
-    };
+    });
   }
 
   @Post(':id/edit')
   async updateReview(
-    @Param('id') id: string,
+    @Req() req: Request,
+    @Param('id',ParseIntPipe) id: number,
     @Body() updateReviewDto: UpdateReviewDto,
     @Res() res: Response,
   ) {
-    await this.reviewsService.update(Number(id), updateReviewDto);
+    const currentUser = await this.authService.requireUser(req);
+    await this.reviewsService.update(id, updateReviewDto, currentUser.id);
     return res.redirect(`/reviews/${id}`);
   }
 
   @Post(':id/delete')
-  async deleteReview(@Param('id') id: string, @Res() res: Response) {
-    await this.reviewsService.remove(Number(id));
+  async deleteReview(
+    @Req() req: Request,
+    @Param('id',ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
+    const currentUser = await this.authService.requireUser(req);
+    await this.reviewsService.remove(id, currentUser.id);
     return res.redirect('/reviews');
   }
 }

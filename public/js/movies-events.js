@@ -21,5 +21,11 @@ document.addEventListener('DOMContentLoaded', () => {
     while (eventsList.children.length > 5) {
       eventsList.removeChild(eventsList.lastChild);
     }
-  }
-}
+
+    console.log('SSE event:', data);
+
+    if (window.toastr) {
+      window.toastr.info(data.message, 'Событие каталога');
+    }
+  };
+});

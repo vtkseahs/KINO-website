@@ -32,6 +32,12 @@
         {{> card}}
       {{/each}}
     </div>
+
+    {{#if isAdmin}}
+      <div class="admin-add-row">
+        <a href="/movies/add" class="button">Добавить фильм</a>
+      </div>
+    {{/if}}
   </section>
 </main>
 

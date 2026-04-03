@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  {{> head}}
+</head>
+<body>
+{{> header}}
+
+<main class="content">
+  <section class="movie-form-page">
+    <h2>{{title}}</h2>
+
+    <form action="{{formAction}}" method="POST" class="entity-form">
+      <div class="form-field">
+        <label>Название тарифа</label>
+        <input type="text" name="title" value="{{plan.title}}" required>
+      </div>
+
+      <div class="form-field">
+        <label>Описание</label>
+        <textarea name="description" required>{{plan.description}}</textarea>
+      </div>
+
+      <div class="form-field">
+        <label>Цена</label>
+        <input type="number" name="price" value="{{plan.price}}" required>
+      </div>
+
+      <div class="form-field">
+        <label>Срок (в днях)</label>
+        <input type="number" name="durationDays" value="{{plan.durationDays}}" required>
+      </div>
+
+      <button type="submit" class="button">
+        {{#if isEdit}}Сохранить{{else}}Добавить тариф{{/if}}
+      </button>
+    </form>
+
+    <a href="/subscribe" class="button button--secondary">Назад к подпискам</a>
+  </section>
+</main>
+
+{{> footer}}
+{{> scripts}}
+</body>
+</html>

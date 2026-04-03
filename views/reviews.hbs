@@ -12,7 +12,13 @@
       <h2>Отзывы пользователей</h2>
     </div>
 
-    <a href="/reviews/add" class="button">Добавить отзыв</a>
+    <div class="section-actions">
+      {{#if isAuth}}
+        <a href="/reviews/add" class="button">Добавить отзыв</a>
+      {{else}}
+        <a href="/auth/login" class="button">Войти, чтобы оставить отзыв</a>
+      {{/if}}
+    </div>
 
     <div class="faq-list" style="margin-top: 20px;">
       {{#each reviews}}
@@ -24,7 +30,9 @@
 
           <div class="movie-actions" style="margin-top: 12px;">
             <a href="/reviews/{{this.id}}" class="button">Открыть</a>
-            <a href="/reviews/{{this.id}}/edit" class="button button--secondary">Редактировать</a>
+            {{#if this.canManage}}
+              <a href="/reviews/{{this.id}}/edit" class="button button--secondary">Редактировать</a>
+            {{/if}}
           </div>
         </article>
       {{else}}

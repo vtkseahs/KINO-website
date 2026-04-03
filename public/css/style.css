@@ -330,10 +330,12 @@ footer a:hover { color: var(--red); }
 }
 
 .profile-subscribe {
-    border-radius: 12px;
-    padding: 16px;
+    box-sizing: border-box;
     width: 100%;
+    max-width: 100%;
     margin-top: 10px;
+    padding: 16px;
+    border-radius: 12px;
     background: var(--bg-gray);
     border: 1px solid var(--border);
 }
@@ -565,7 +567,7 @@ footer a:hover { color: var(--red); }
     .logo-and-title h1 { margin: 0; font-size: 30px; }
     .navigation ul { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; }
 
-    .recomended-movies-header h2, .favorites-movies-header h2, .page-header h2, .profile-section-header h2{ font-size: 26px; }
+    .recomended-movies-header h2, .favorites-movies-header h2, .page-header h2, .profile-section-header h2{ font-size: 26px; text-align: left}
     .recomended-movies-header p, .favorites-movies-header p, .page-header p { font-size: 16px;}
     .best-movies, .favorites-movies-card { grid-template-columns: repeat(2, 1fr); }
     .movie-info h3 {font-size: 17px;}
@@ -812,5 +814,111 @@ footer a:hover { color: var(--red); }
 .movies-events li {
     margin-bottom: 8px;
     color: var(--text-sec);
+}
+
+.entity-form {
+    display: grid;
+    gap: 18px;
+    max-width: 720px;
+    padding: 24px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+}
+
+.form-field {
+    display: grid;
+    gap: 8px;
+}
+
+.form-field label {
+    font-weight: 700;
+    color: var(--text);
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-gray);
+    color: var(--text);
+    font-size: 16px;
+}
+
+.form-field textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.form-actions .button,
+.form-actions button {
+    min-width: 180px;
+    justify-content: center;
+}
+
+.button--danger {
+    background: transparent;
+    border: 2px solid var(--red-dark);
+    color: var(--red);
+}
+
+.button--danger:hover {
+    background: var(--red-dark);
+    color: var(--black);
+}
+
+.section-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.section-actions .button,
+.section-actions button {
+    min-width: 180px;
+    justify-content: center;
+}
+
+.admin-add-row {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 28px;
+}
+
+.plan-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.plan-actions .button,
+.plan-actions button,
+.plan-actions form {
+    width: 100%;
+}
+
+.plan-actions .button,
+.plan-actions button {
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.auth-card {
+    max-width: 480px;
+    margin: 0 auto;
 }
 

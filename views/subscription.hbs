@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  {{> head}}
+</head>
+<body>
+{{> header}}
+
+<main class="content">
+  <section class="movie-page">
+    <h2>{{plan.title}}</h2>
+
+    <div class="profile-card">
+      <p><strong>Описание:</strong> {{plan.description}}</p>
+      <p><strong>Цена:</strong> {{plan.price}} ₽</p>
+      <p><strong>Срок действия:</strong> {{plan.durationDays}} дней</p>
+    </div>
+
+    <div class="movie-actions">
+      {{#if isAuth}}
+        <form action="/subscribe/{{plan.id}}/buy" method="POST">
+          <button type="submit" class="button">Оформить подписку</button>
+        </form>
+      {{/if}}
+
+      {{#if isAdmin}}
+        <a href="/subscribe/{{plan.id}}/edit" class="button">Редактировать</a>
+        <form action="/subscribe/{{plan.id}}/delete" method="POST">
+          <button type="submit" class="button">Удалить</button>
+        </form>
+      {{/if}}
+
+      <a href="/subscribe" class="button button--secondary">Назад к списку</a>
+    </div>
+  </section>
+</main>
+
+{{> footer}}
+{{> scripts}}
+</body>
+</html>

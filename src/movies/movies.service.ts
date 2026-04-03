@@ -26,21 +26,15 @@ export class MoviesService {
 
   async findAll() {
     return this.prisma.movie.findMany({
-      include: {
-        genre: true,
-      },
-      orderBy: {
-        id: 'asc',
-      },
+      include: { genre: true},
+      orderBy: { id: 'asc' },
     });
   }
 
   async findOne(id: number) {
     const movie = await this.prisma.movie.findUnique({
       where: { id },
-      include: {
-        genre: true,
-      },
+      include: { genre: true},
     });
 
     if (!movie) {
@@ -63,7 +57,7 @@ export class MoviesService {
         year: Number(createMovieDto.year),
         duration: Number(createMovieDto.duration),
         ageRating: createMovieDto.ageRating,
-        posterUrl: createMovieDto.posterUrl || null,
+        posterUrl: createMovieDto.posterUrl,
         genreId: Number(createMovieDto.genreId),
       },
     });
@@ -73,7 +67,7 @@ export class MoviesService {
   }
 
   async update(id: number, updateMovieDto: UpdateMovieDto) {
-    await this.findOne(id);
+    const existingMovie = await this.findOne(id);
 
     const movie = await this.prisma.movie.update({
       where: { id },
@@ -89,7 +83,11 @@ export class MoviesService {
             ? Number(updateMovieDto.duration)
             : undefined,
         ageRating: updateMovieDto.ageRating,
-        posterUrl: updateMovieDto.posterUrl || null,
+        posterUrl:
+          updateMovieDto.posterUrl !== undefined &&
+          updateMovieDto.posterUrl !== ''
+            ? updateMovieDto.posterUrl
+            : existingMovie.posterUrl,
         genreId:
           updateMovieDto.genreId !== undefined
             ? Number(updateMovieDto.genreId)
@@ -97,7 +95,7 @@ export class MoviesService {
       },
     });
 
-    this.sendEvent(`Изменён фильм: ${movie.title}`);
+    this.sendEvent(`Изменен фильм: ${movie.title}`);
     return movie;
   }
 
@@ -108,6 +106,6 @@ export class MoviesService {
       where: { id },
     });
 
-    this.sendEvent(`Удалён фильм: ${movie.title}`);
+    this.sendEvent(`Удален фильм: ${movie.title}`);
   }
 }

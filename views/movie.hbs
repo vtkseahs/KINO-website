@@ -23,15 +23,15 @@
         <p><strong>Жанр:</strong> {{movie.genre.name}}</p>
       </div>
     </div>
-
     <div class="movie-actions">
-      <a href="/movies/{{movie.id}}/edit" class="button">Редактировать</a>
+      {{#if isAdmin}}
+        <a href="/movies/{{movie.id}}/edit" class="button">Редактировать</a>
 
-      <form action="/movies/{{movie.id}}/delete" method="POST">
-        <button type="submit" >Удалить</button>
-      </form>
-
-      <a href="/movies" class="button button--secondary">Назад к каталогу</a>
+        <form action="/movies/{{movie.id}}/delete" method="POST">
+          <button type="submit" class="button button--danger">Удалить</button>
+        </form>
+      {{/if}}
+      <a href="/movies" class="button button--danger">Назад к каталогу</a>
     </div>
   </section>
 </main>

@@ -1,9 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
-
-const DEMO_USER_ID = 1;
 
 @Injectable()
 export class ReviewsService {
@@ -15,9 +13,7 @@ export class ReviewsService {
         user: true,
         movie: true,
       },
-      orderBy: {
-        id: 'desc',
-      },
+      orderBy: { id: 'desc'},
     });
   }
 
@@ -45,21 +41,21 @@ export class ReviewsService {
     });
   }
 
-  async create(createReviewDto: CreateReviewDto) {
-    return this.prisma.review.create({
+  async createForUser(createReviewDto: CreateReviewDto, userId: number) {
+    const review= await this.prisma.review.create({
       data: {
         rating: Number(createReviewDto.rating),
         comment: createReviewDto.comment,
-        userId: DEMO_USER_ID,
+        userId: userId,
         movieId: Number(createReviewDto.movieId),
       },
     });
+    return review;
   }
 
-  async update(id: number, updateReviewDto: UpdateReviewDto) {
-    await this.findOne(id);
-
-    return this.prisma.review.update({
+  async update(id: number, updateReviewDto: UpdateReviewDto, userId: number) {
+    await this.findOwnedByUser(id, userId);
+    const review = await this.prisma.review.update({
       where: { id },
       data: {
         rating:
@@ -73,13 +69,23 @@ export class ReviewsService {
             : undefined,
       },
     });
+    return review;
   }
 
-  async remove(id: number) {
-    await this.findOne(id);
+  async remove(id: number, userId: number) {
+    await this.findOwnedByUser(id, userId);
 
     return this.prisma.review.delete({
       where: { id },
     });
+  }
+
+  private async findOwnedByUser(id: number, userId: number) {
+    const review = await this.findOne(id);
+
+    if (review.userId !== userId) {
+      throw new ForbiddenException('Нельзя изменять чужой отзыв');
+    }
+    return review;
   }
 }

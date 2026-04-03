@@ -10,8 +10,8 @@
   <section class="movie-form-page">
     <h2>{{title}}</h2>
 
-    <form action="{{formAction}}" method="POST">
-      <div>
+    <form action="{{formAction}}" method="POST" class="entity-form">
+      <div class="form-field">
         <label>Фильм</label>
         <select name="movieId" required>
           {{#each movies}}
@@ -25,7 +25,7 @@
         </select>
       </div>
 
-      <div>
+      <div class="form-field">
         <label>Оценка</label>
         <input
           type="number"
@@ -37,17 +37,18 @@
         >
       </div>
 
-      <div>
+      <div class="form-field">
         <label>Текст отзыва</label>
         <textarea name="comment" required>{{review.comment}}</textarea>
       </div>
 
-      <button type="submit">
-        {{#if isEdit}}Сохранить{{else}}Добавить отзыв{{/if}}
-      </button>
+      <div class="form-actions">
+        <button type="submit" class="button">
+          {{#if isEdit}}Сохранить{{else}}Добавить отзыв{{/if}}
+        </button>
+        <a href="/reviews" class="button button--secondary">Назад к списку</a>
+      </div>
     </form>
-
-    <a href="/reviews" class="button button--secondary">Назад к списку</a>
   </section>
 </main>
 

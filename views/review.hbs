@@ -17,12 +17,14 @@
     </div>
 
     <div class="movie-actions">
-      <a href="/reviews/{{review.id}}/edit" class="button">Редактировать</a>
+      {{#if review.canManage}}
+        <a href="/reviews/{{review.id}}/edit" class="button">Редактировать</a>
 
-      <form action="/reviews/{{review.id}}/delete" method="POST">
-        <button type="submit">Удалить</button>
-      </form>
+        <form action="/reviews/{{review.id}}/delete" method="POST">
+          <button type="submit" class="button button--danger">Удалить</button>
+        </form>
 
+      {{/if}}
       <a href="/reviews" class="button button--secondary">Назад к списку</a>
     </div>
   </section>

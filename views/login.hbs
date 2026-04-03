@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  {{> head}}
+</head>
+<body>
+{{> header}}
+
+<main class="content">
+  <section class="movie-form-page">
+    <div class="page-header auth-card">
+      <h2>Вход в Kino</h2>
+      <p>Войдите в аккаунт, чтобы управлять фильмами, отзывами, избранным и подпиской.</p>
+    </div>
+
+    {{#if errorMessage}}
+      <div class="auth-card">
+        <p>{{errorMessage}}</p>
+      </div>
+    {{/if}}
+
+    <form action="/auth/login" method="POST" class="entity-form auth-card">
+      <div class="form-field">
+        <label for="login">Логин</label>
+        <input
+          id="login"
+          type="text"
+          name="login"
+          placeholder="Введите email"
+          required
+        >
+      </div>
+
+      <div class="form-field">
+        <label for="password">Пароль</label>
+        <input
+          id="password"
+          type="password"
+          name="password"
+          placeholder="Введите пароль"
+          required
+        >
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="button">Войти</button>
+        <a href="/" class="button button--secondary">На главную</a>
+      </div>
+    </form>
+  </section>
+</main>
+
+{{> footer}}
+{{> scripts}}
+</body>
+</html>

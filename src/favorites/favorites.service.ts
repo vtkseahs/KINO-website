@@ -4,15 +4,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 
-const DEMO_USER_ID = 1;
-
 @Injectable()
 export class FavoritesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll() {
+  async findAll(userId: number) {
     return this.prisma.favorite.findMany({
-      where: { userId: DEMO_USER_ID },
+      where: { userId },
       include: {
         movie: {
           include: {
@@ -26,7 +24,7 @@ export class FavoritesService {
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, userId?: number) {
     const favorite = await this.prisma.favorite.findUnique({
       where: { id },
       include: {
@@ -56,11 +54,11 @@ export class FavoritesService {
     });
   }
 
-  async create(createFavoriteDto: CreateFavoriteDto) {
+  async create(createFavoriteDto: CreateFavoriteDto, userId: number) {
     try {
       return await this.prisma.favorite.create({
         data: {
-          userId: DEMO_USER_ID,
+          userId,
           movieId: Number(createFavoriteDto.movieId),
         },
       });
@@ -74,8 +72,8 @@ export class FavoritesService {
     }
   }
 
-  async update(id: number, updateFavoriteDto: UpdateFavoriteDto) {
-    await this.findOne(id);
+  async update(id: number, updateFavoriteDto: UpdateFavoriteDto, userId: number) {
+    await this.findOne(id, userId);
 
     try {
       return await this.prisma.favorite.update({
@@ -94,8 +92,8 @@ export class FavoritesService {
     }
   }
 
-  async remove(id: number) {
-    await this.findOne(id);
+  async remove(id: number, userId: number) {
+    await this.findOne(id, userId);
 
     return this.prisma.favorite.delete({
       where: { id },

@@ -6,10 +6,11 @@
 <body>
 {{> header}}
 
-<main>
+<main class="content">
   <section class="profile-section">
     <header class="profile-section-header">
       <h2>Мой профиль</h2>
+      <p>Данные аккаунта, роль и текущая подписка</p>
     </header>
 
     <article class="profile-card">
@@ -20,14 +21,35 @@
 
         <div class="profile-description">
           <h3>{{profile.name}}</h3>
-          <p>{{profile.email}}</p>
-          <p>Роль: {{profile.role}}</p>
-          <p>Дата регистрации: {{profile.createdAt}}</p>
+          <p><strong>Email:</strong> {{profile.email}}</p>
+          <p><strong>Роль:</strong> {{profile.role}}</p>
+          <p><strong>Дата регистрации:</strong> {{profile.createdAt}}</p>
         </div>
       </div>
 
-      <div class="movie-actions" style="margin-top: 20px;">
-        <a href="/profile/edit?auth=1" class="button">Редактировать профиль</a>
+      {{#if profile.subscriptionPlan}}
+        <div class="profile-subscribe">
+          <div class="profile-subscribe-header">
+            <h4>{{profile.subscriptionPlan.title}}</h4>
+            <span class="subscription-status">Активна</span>
+          </div>
+
+          <p>{{profile.subscriptionPlan.description}}</p>
+          <p><strong>Стоимость:</strong> {{profile.subscriptionPlan.price}} ₽ в месяц</p>
+          <p><strong>Действует до:</strong> {{profile.subscriptionEndsAt}}</p>
+        </div>
+      {{else}}
+        <div class="profile-subscribe">
+          <div class="profile-subscribe-header">
+            <h4>Подписка не оформлена</h4>
+          </div>
+          <p>Выберите подходящий тариф, чтобы получить доступ к подписке</p>
+        </div>
+      {{/if}}
+
+      <div class="section-actions">
+        <a href="/profile/edit" class="button">Редактировать профиль</a>
+        <a href="/subscribe" class="button button--secondary">Перейти к подпискам</a>
       </div>
     </article>
   </section>

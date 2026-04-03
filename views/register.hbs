@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  {{> head}}
+</head>
+<body>
+{{> header}}
+
+<main class="content">
+  <section class="movie-form-page">
+    <div class="page-header auth-card">
+      <h2>Регистрация в Kino</h2>
+      <p>Пройдите регистрацию, чтобы управлять фильмами, отзывами, избранным и подпиской.</p>
+    </div>
+
+    {{#if errorMessage}}
+      <div class="auth-card" style="margin-bottom: 16px;">
+        <p>{{errorMessage}}</p>
+      </div>
+    {{/if}}
+
+    <form action="/auth/register" method="POST" class="entity-form auth-card">
+      <div class="form-field">
+        <label for="name">Имя</label>
+        <input
+          id="name"
+          type="text"
+          name="name"
+          placeholder="Введите имя"
+          required
+        >
+      </div>
+
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          name="email"
+          placeholder="Введите email"
+          required
+        >
+      </div>
+
+      <div class="form-field">
+        <label for="password">Пароль</label>
+        <input
+          id="password"
+          type="password"
+          name="password"
+          placeholder="Введите пароль"
+          required
+        >
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="button">Зарегистрироваться</button>
+        <a href="/" class="button button--outline">На главную</a>
+      </div>
+    </form>
+
+  </section>
+</main>
+
+{{> footer}}
+{{> scripts}}
+</body>
+</html>

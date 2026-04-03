@@ -12,46 +12,57 @@
     <p>Доступ к миллионам фильмов и сериалов за один клик</p>
   </header>
 
+  {{#if currentSubscription}}
+    {{#if currentSubscription.plan}}
+      <section class="profile-section" style="margin-bottom: 32px;">
+        <article class="profile-card">
+          <h3>Моя текущая подписка</h3>
+          <p><strong>Тариф:</strong> {{currentSubscription.plan.title}}</p>
+          <p><strong>Цена:</strong> {{currentSubscription.plan.price}} ₽ в месяц</p>
+          <p><strong>Действует до:</strong> {{currentSubscription.endsAt}}</p>
+          <form action="/subscribe/cancel" method="POST">
+            <button type="submit" class="button button--outline">Отменить подписку</button>
+          </form>
+        </article>
+      </section>
+    {{/if}}
+  {{/if}}
+
   <section class="price-info">
     <div class="tarif-plan">
-      <article class="plan-card">
-        <header class="plan-header">
-          <h3>Базовый</h3>
-          <div class="price">
-            <p>299 Р в месяц</p>
+      {{#each plans}}
+        <article class="plan-card">
+          <header class="plan-header">
+            <h3>{{this.title}}</h3>
+            <div class="price">
+              <p>{{this.price}} ₽ в месяц</p>
+            </div>
+          </header>
+
+          <p>{{this.description}}</p>
+
+          <div class="plan-actions">
+            <a href="/subscribe/{{this.id}}" class="button button--secondary">Подробнее</a>
+
+            {{#if ../isAuth}}
+              <form action="/subscribe/{{this.id}}/buy" method="POST">
+                <button type="submit" class="button button--secondary">Выбрать</button>
+              </form>
+            {{else}}
+              <a href="/auth/login" class="button button--secondary">Войти</a>
+            {{/if}}
+
+            {{#if ../isAdmin}}
+              <a href="/subscribe/{{this.id}}/edit" class="button button--secondary">Редактировать</a>
+              <form action="/subscribe/{{this.id}}/delete" method="POST">
+                <button type="submit" class="button button--danger">Удалить</button>
+              </form>
+            {{/if}}
           </div>
-        </header>
-
-        <div class="plan-actions">
-          <button>Выбрать</button>
-        </div>
-      </article>
-
-      <article class="plan-card">
-        <header class="plan-header">
-          <h3>Я в прайме</h3>
-          <div class="price">
-            <p>Теперь вместо <del>599</del> всего <strong>399</strong> в <ins>месяц!</ins></p>
-          </div>
-        </header>
-
-        <div class="plan-actions">
-          <button>Выбрать</button>
-        </div>
-      </article>
-
-      <article class="plan-card">
-        <header class="plan-header">
-          <h3>Я сигма</h3>
-          <div class="price">
-            <p>799 Р в месяц</p>
-          </div>
-        </header>
-
-        <div class="plan-actions">
-          <button>Выбрать</button>
-        </div>
-      </article>
+        </article>
+      {{else}}
+        <p>Тарифы пока не добавлены</p>
+      {{/each}}
     </div>
   </section>
 
@@ -66,7 +77,7 @@
 
       <article class="faq-item">
         <h3>Можно ли отменить подписку?</h3>
-        <p>Да, вы можете отменить подписку в любой момент в <a href="#settings.html">настройках</a>.</p>
+        <p>Да, вы можете отменить подписку в любой момент</a>.</p>
       </article>
 
       <article class="faq-item">
@@ -82,34 +93,33 @@
       <thead>
       <tr>
         <th>Тариф</th>
-        <th>Качество</th>
-        <th>Устройств</th>
+        <th>Описание</th>
+        <th>Срок</th>
         <th>Цена в мес</th>
       </tr>
       </thead>
       <tbody>
-      <tr>
-        <td>Базовый</td>
-        <td>HD</td>
-        <td>1</td>
-        <td>299 Р</td>
-      </tr>
-      <tr>
-        <td>Я в прайме</td>
-        <td>Full HD</td>
-        <td>2</td>
-        <td>399 Р</td>
-      </tr>
-      <tr>
-        <td>Я сигма</td>
-        <td>4K</td>
-        <td>4</td>
-        <td>799 Р</td>
-      </tr>
+      {{#each plans}}
+        <tr>
+          <td>{{this.title}}</td>
+          <td>{{this.description}}</td>
+          <td>{{this.durationDays}} дней</td>
+          <td>{{this.price}} ₽</td>
+        </tr>
+      {{else}}
+        <tr>
+          <td colspan="4">Тарифы пока отсутствуют</td>
+        </tr>
+      {{/each}}
       </tbody>
     </table>
   </section>
 
+  {{#if isAdmin}}
+    <div class="admin-add-row">
+      <a href="/subscribe/add" class="button">Добавить тариф</a>
+    </div>
+  {{/if}}
 </main>
 
 {{> footer}}
