@@ -8,8 +8,21 @@ import { ProfileModule } from './profile/profile.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { GraphqlComplexityPlugin } from './graphql-complexity.plugin';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { join } from 'path';
 @Module({
-  imports: [MoviesModule, FavoritesModule, ProfileModule, ReviewsModule,PrismaModule,AuthModule, SubscriptionsModule],
+  imports: [MoviesModule, FavoritesModule, ProfileModule, ReviewsModule,PrismaModule,AuthModule, SubscriptionsModule,
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      sortSchema: true,
+      playground: false,
+      introspection: true,
+      plugins: [ApolloServerPluginLandingPageLocalDefault(), new GraphqlComplexityPlugin(10)],
+    }),],
   controllers: [AppController],
   providers: [AppService],
 })

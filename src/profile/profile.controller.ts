@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Render, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Render, Res, Param, ParseIntPipe } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { ProfileService } from './profile.service';
 import { AuthService } from '../auth/auth.service';
@@ -48,5 +48,16 @@ export class ProfileController {
     const currentUser = await this.authService.requireUser(req);
     await this.profileService.updateCurrentProfile(currentUser.id, updateProfileDto);
     return res.redirect('/profile');
+  }
+
+  @Post(':id/delete')
+  async deleteProfile(
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const currentUser = await this.authService.requireUser(req);
+    await this.profileService.removeProfile(currentUser.id);
+    this.authService.clearUserCookie(res);
+    return res.redirect('/');
   }
 }

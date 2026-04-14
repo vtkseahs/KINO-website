@@ -107,7 +107,7 @@ export class ReviewsService {
             updateReviewDto.rating !== undefined
               ? Number(updateReviewDto.rating)
               : undefined,
-          comment: updateReviewDto.comment,
+          comment: updateReviewDto.comment !==undefined ? updateReviewDto.comment : undefined,
           movieId:
             updateReviewDto.movieId !== undefined
               ? Number(updateReviewDto.movieId)

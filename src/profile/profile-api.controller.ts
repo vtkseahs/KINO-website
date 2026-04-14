@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, Query, Req, Res, UsePipes, ValidationPipe, } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiConflictResponse, ApiCookieAuth, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse, } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiConflictResponse, ApiCookieAuth, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse, } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { AuthService } from '../auth/auth.service';
 import { ProfileService } from './profile.service';
@@ -33,5 +33,15 @@ export class ProfileApiController {
     @Body() dto: UpdateProfileApiDto) {
     const currUser = await this.authService.requireUser(req);
     return this.profileService.updateCurrentProfile(currUser.id, dto);
+  }
+
+  @Delete()
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Удалить профиль пользователя' })
+  @ApiNoContentResponse({ description: 'Профиль удален' })
+  @ApiUnauthorizedResponse({ description: 'Пользователь не авторизован' })
+  async removeProfile(@Req() req: Request) {
+    const currentUser = await this.authService.requireUser(req);
+    await this.profileService.removeProfile(currentUser.id);
   }
 }

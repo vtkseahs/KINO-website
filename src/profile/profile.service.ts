@@ -26,8 +26,8 @@ export class ProfileService {
       return await this.prisma.user.update({
         where: { id: userId },
         data: {
-          name: updateProfileDto.name,
-          email: updateProfileDto.email,
+          name: updateProfileDto.name !== undefined ? updateProfileDto.name : undefined,
+          email: updateProfileDto.email!== undefined ? updateProfileDto.email : undefined,
         },
         include:{
           subscriptionPlan: true
@@ -39,5 +39,11 @@ export class ProfileService {
       }
       throw error;
     }
+  }
+  async removeProfile(userId: number) {
+    await this.getCurrentProfile(userId);
+    return this.prisma.user.delete({
+      where: { id: userId },
+    });
   }
 }

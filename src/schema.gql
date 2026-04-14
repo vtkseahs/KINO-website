@@ -1,0 +1,525 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""Данные для добавления фильма в избранное"""
+input CreateFavoriteInput {
+  """id фильма"""
+  movieId: Int!
+
+  """id пользователя"""
+  userId: Int!
+}
+
+"""Данные для создания фильма"""
+input CreateMovieInput {
+  """Возрастной рейтинг"""
+  ageRating: String!
+
+  """Описание фильма"""
+  description: String!
+
+  """Длительность"""
+  duration: Int!
+
+  """id жанра"""
+  genreId: Int!
+
+  """Ссылка на постер"""
+  posterUrl: String
+
+  """Название фильма"""
+  title: String!
+
+  """Год выпуска"""
+  year: Int!
+}
+
+"""Данные для создания отзыва"""
+input CreateReviewInput {
+  """Текст отзыва"""
+  comment: String!
+
+  """id фильма"""
+  movieId: Int!
+
+  """Оценка фильма"""
+  rating: Int!
+
+  """id пользователя"""
+  userId: Int!
+}
+
+"""создание подписки"""
+input CreateSubscriptionPlanInput {
+  """Описание подписки"""
+  description: String!
+
+  """Срок действия подписки"""
+  durationDays: Int!
+
+  """Стоимость подписки"""
+  price: Int!
+
+  """Название подписки"""
+  title: String!
+}
+
+"""Текущая подписка пользователя"""
+type CurrentSubscriptionModel {
+  """Дата окончания подписки"""
+  endsAt: DateTime
+
+  """Активная подписка пользователя"""
+  plan: SubscriptionPlanModel
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+"""Жанр фильма в избранном"""
+type FavoriteGenreModel {
+  """id жанра"""
+  id: Int!
+
+  """Название жанра"""
+  name: String!
+}
+
+"""Запись избранного"""
+type FavoriteModel {
+  """id записи избранного"""
+  id: Int!
+
+  """Фильм в избранном"""
+  movie: FavoriteMovieModel!
+}
+
+"""Фильм из избранного"""
+type FavoriteMovieModel {
+  """Возрастной рейтинг"""
+  ageRating: String!
+
+  """Описание фильма"""
+  description: String!
+
+  """Длительность фильма"""
+  duration: Int!
+
+  """Жанр фильма"""
+  genre: FavoriteGenreModel!
+
+  """id фильма"""
+  id: Int!
+
+  """Постер фильма"""
+  posterUrl: String
+
+  """Название фильма"""
+  title: String!
+
+  """Год выпуска"""
+  year: Int!
+}
+
+"""Страница избранного"""
+type FavoritesPageModel {
+  """Список записей избранного"""
+  data: [FavoriteModel!]!
+
+  """Размер страницы"""
+  limit: Int!
+
+  """Текущая страница"""
+  page: Int!
+
+  """Общее количество записей"""
+  total: Int!
+}
+
+"""Параметры пагинации избранного"""
+input FavoritesPaginationInput {
+  """Количество элементов на странице"""
+  limit: Int = 10
+
+  """Номер страницы"""
+  page: Int = 1
+}
+
+"""Жанр фильма"""
+type GenreModel {
+  """Дата создания жанра"""
+  createdAt: DateTime!
+
+  """id жанра"""
+  id: Int!
+
+  """Название жанра"""
+  name: String!
+}
+
+"""Фильм"""
+type MovieModel {
+  """Возрастной рейтинг"""
+  ageRating: String!
+
+  """Дата создания фильма"""
+  createdAt: DateTime!
+
+  """Описание фильма"""
+  description: String!
+
+  """Длительность в минутах"""
+  duration: Int!
+
+  """Жанр фильма"""
+  genre: GenreModel!
+
+  """id жанра"""
+  genreId: Int!
+
+  """id фильма"""
+  id: Int!
+
+  """Ссылка на постер"""
+  posterUrl: String
+
+  """Название фильма"""
+  title: String!
+
+  """Дата последнего обновления фильма"""
+  updatedAt: DateTime!
+
+  """Год выпуска"""
+  year: Int!
+}
+
+"""Страница фильмов"""
+type MoviesPageModel {
+  """Список фильмов"""
+  data: [MovieModel!]!
+
+  """Размер страницы"""
+  limit: Int!
+
+  """Текущая страница"""
+  page: Int!
+
+  """Общее количество фильмов"""
+  total: Int!
+}
+
+"""Параметры пагинации"""
+input MoviesPaginationInput {
+  """Количество элементов на странице"""
+  limit: Int = 10
+
+  """Номер страницы"""
+  page: Int = 1
+}
+
+type Mutation {
+  """Оформить подписку на тариф"""
+  buySubscription(planId: Int!, userId: Int!): SubscriptionPlanModel!
+
+  """Отменить текущую подписку пользователя"""
+  cancelSubscription(userId: Int!): Boolean!
+
+  """Добавить фильм в избранное"""
+  createFavorite(input: CreateFavoriteInput!): FavoriteModel!
+
+  """Создать фильм"""
+  createMovie(input: CreateMovieInput!): MovieModel!
+
+  """Создать отзыв"""
+  createReview(input: CreateReviewInput!): ReviewModel!
+
+  """Создать тариф"""
+  createSubscriptionPlan(input: CreateSubscriptionPlanInput!): SubscriptionPlanModel!
+
+  """Удалить запись избранного"""
+  removeFavorite(id: Int!, userId: Int!): Boolean!
+
+  """Удалить фильм"""
+  removeMovie(id: Int!): Boolean!
+
+  """Удалить профиль пользователя"""
+  removeProfile(userId: Int!): Boolean!
+
+  """Удалить отзыв"""
+  removeReview(id: Int!, userId: Int!): Boolean!
+
+  """Удалить тариф"""
+  removeSubscriptionPlan(id: Int!): Boolean!
+
+  """Обновить запись избранного"""
+  updateFavorite(id: Int!, input: UpdateFavoriteInput!): FavoriteModel!
+
+  """Обновить фильм"""
+  updateMovie(id: Int!, input: UpdateMovieInput!): MovieModel!
+
+  """Обновить профиль пользователя"""
+  updateProfile(input: UpdateProfileInput!, userId: Int!): ProfileModel!
+
+  """Обновить отзыв"""
+  updateReview(id: Int!, input: UpdateReviewInput!): ReviewModel!
+
+  """Обновить тариф"""
+  updateSubscriptionPlan(id: Int!, input: UpdateSubscriptionPlanInput!): SubscriptionPlanModel!
+}
+
+"""Профиль пользователя"""
+type ProfileModel {
+  """Дата регистрации"""
+  createdAt: String!
+
+  """почта пользователя"""
+  email: String!
+
+  """id пользователя"""
+  id: Int!
+
+  """имя пользователя"""
+  name: String!
+
+  """роль"""
+  role: String!
+
+  """Дата окончания подписки"""
+  subscriptionEndsAt: String
+
+  """Текущая подписка пользователя"""
+  subscriptionPlan: ProfileSubscriptionPlanModel
+}
+
+"""подписка в профиле пользователя"""
+type ProfileSubscriptionPlanModel {
+  """Описание подписки"""
+  description: String!
+
+  """Длительность подписки"""
+  durationDays: Int!
+
+  """id подписки"""
+  id: Int!
+
+  """Стоимость подписки"""
+  price: Int!
+
+  """Название подписки"""
+  title: String!
+}
+
+type Query {
+  """Получить текущую подписку пользователя"""
+  currentSubscription(userId: Int!): CurrentSubscriptionModel!
+
+  """Получить избранное пользователя"""
+  get_all_favorites(pagination: FavoritesPaginationInput, userId: Int!): FavoritesPageModel!
+
+  """Получить список тарифов"""
+  get_all_subscriptionPlans(pagination: SubscriptionsPaginationInput): SubscriptionPlansPageModel!
+
+  """Получить запись избранного по id"""
+  get_one_favorites(id: Int!, userId: Int!): FavoriteModel!
+
+  """Получить тариф по id"""
+  get_one_subscriptionPlan(id: Int!): SubscriptionPlanModel!
+
+  """Получить фильм по id"""
+  movie(id: Int!): MovieModel!
+
+  """Получить список фильмов"""
+  movies(pagination: MoviesPaginationInput): MoviesPageModel!
+
+  """Получить профиль пользователя"""
+  profile(userId: Int!): ProfileModel!
+
+  """Получить отзыв по id"""
+  review(id: Int!): ReviewModel!
+
+  """Получить список отзывов"""
+  reviews(pagination: ReviewsPaginationInput): ReviewsPageModel!
+}
+
+"""Отзыв"""
+type ReviewModel {
+  """Текст отзыва"""
+  comment: String!
+
+  """id отзыва"""
+  id: Int!
+
+  """Фильм, к которому относится отзыв"""
+  movie: ReviewMovieModel!
+
+  """Оценка фильма"""
+  rating: Int!
+
+  """Пользователь, оставивший отзыв"""
+  user: ReviewUserModel!
+}
+
+"""Фильм, к которому относится отзыв"""
+type ReviewMovieModel {
+  """id фильма"""
+  id: Int!
+
+  """Название фильма"""
+  title: String!
+}
+
+"""Пользователь, оставивший отзыв"""
+type ReviewUserModel {
+  """почта пользователя"""
+  email: String!
+
+  """id пользователя"""
+  id: Int!
+
+  """имя пользователя"""
+  name: String!
+}
+
+"""Страница отзывов"""
+type ReviewsPageModel {
+  """Список отзывов"""
+  data: [ReviewModel!]!
+
+  """Размер страницы"""
+  limit: Int!
+
+  """Текущая страница"""
+  page: Int!
+
+  """Общее количество отзывов"""
+  total: Int!
+}
+
+"""Ппагинация отзывов"""
+input ReviewsPaginationInput {
+  """Количество элементов на стр"""
+  limit: Int = 10
+
+  """Номер стр"""
+  page: Int = 1
+}
+
+"""Тариф подписки"""
+type SubscriptionPlanModel {
+  """Дата создания"""
+  createdAt: DateTime!
+
+  """Описание тарифа"""
+  description: String!
+
+  """Срок действия тарифа"""
+  durationDays: Int!
+
+  """id тарифа"""
+  id: Int!
+
+  """Стоимость тарифа"""
+  price: Int!
+
+  """Название тарифа"""
+  title: String!
+}
+
+"""Страница тарифов подписки"""
+type SubscriptionPlansPageModel {
+  """Список тарифов"""
+  data: [SubscriptionPlanModel!]!
+
+  """Размер стр"""
+  limit: Int!
+
+  """Текущая стр"""
+  page: Int!
+
+  """Общее количество тарифов"""
+  total: Int!
+}
+
+"""Параметры пагинации подписки"""
+input SubscriptionsPaginationInput {
+  """Количество элементов на стр"""
+  limit: Int = 10
+
+  """Номер стр"""
+  page: Int = 1
+}
+
+"""Данные для обновления записи избранного"""
+input UpdateFavoriteInput {
+  """id фильма"""
+  movieId: Int!
+
+  """id пользователя"""
+  userId: Int!
+}
+
+"""Данные для обновления фильма"""
+input UpdateMovieInput {
+  """Возрастной рейтинг"""
+  ageRating: String
+
+  """Описание фильма"""
+  description: String
+
+  """Длительность в минутах"""
+  duration: Int
+
+  """id жанра"""
+  genreId: Int
+
+  """Ссылка на постер"""
+  posterUrl: String
+
+  """Название фильма"""
+  title: String
+
+  """Год выпуска"""
+  year: Int
+}
+
+"""Данные для обновления профиля"""
+input UpdateProfileInput {
+  """Новая почта"""
+  email: String
+
+  """Новое имя"""
+  name: String
+}
+
+"""обновление отзыва"""
+input UpdateReviewInput {
+  """Текст отзыва"""
+  comment: String
+
+  """id фильма"""
+  movieId: Int
+
+  """Оценка фильма"""
+  rating: Int
+
+  """id пользователя"""
+  userId: Int!
+}
+
+"""Данные для обновления подписки"""
+input UpdateSubscriptionPlanInput {
+  """Описание подписки"""
+  description: String
+
+  """Срок действия подписки"""
+  durationDays: Int
+
+  """Стоимость подписки"""
+  price: Int
+
+  """Название подписки"""
+  title: String
+}

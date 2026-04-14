@@ -75,8 +75,12 @@ export class MoviesService {
     const movie = await this.prisma.movie.update({
       where: { id },
       data: {
-        title: updateMovieDto.title,
-        description: updateMovieDto.description,
+        title: updateMovieDto.title !==undefined
+          ? updateMovieDto.title
+          : undefined,
+        description: updateMovieDto.description !== undefined
+          ? updateMovieDto.description
+          : undefined,
         year:
           updateMovieDto.year !== undefined
             ? Number(updateMovieDto.year)
@@ -85,7 +89,7 @@ export class MoviesService {
           updateMovieDto.duration !== undefined
             ? Number(updateMovieDto.duration)
             : undefined,
-        ageRating: updateMovieDto.ageRating,
+        ageRating: updateMovieDto.ageRating !== undefined ? updateMovieDto.ageRating : undefined,
         posterUrl:
           updateMovieDto.posterUrl !== undefined &&
           updateMovieDto.posterUrl !== ''

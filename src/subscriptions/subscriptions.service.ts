@@ -42,8 +42,8 @@ export class SubscriptionsService {
     return this.prisma.subscriptionPlan.update({
       where: { id },
       data: {
-        title: dto.title,
-        description: dto.description,
+        title: dto.title !== undefined ? dto.title : undefined,
+        description: dto.description!== undefined ? dto.description : undefined,
         price: dto.price !== undefined ? Number(dto.price) : undefined,
         durationDays:
           dto.durationDays !== undefined ? Number(dto.durationDays) : undefined,

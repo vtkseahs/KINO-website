@@ -3,10 +3,11 @@ import { FavoritesService } from './favorites.service';
 import { FavoritesController } from './favorites.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import {FavoritesApiController} from './favorites-api.controller';
+import { FavoritesResolver } from './graphql/favorites.resolver';
 
 @Module({
   imports: [PrismaModule],
   controllers: [FavoritesController, FavoritesApiController],
-  providers: [FavoritesService],
+  providers: [FavoritesService,FavoritesResolver],
 })
 export class FavoritesModule {}
