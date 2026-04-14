@@ -4,6 +4,7 @@ import { AuthService } from '../auth/auth.service';
 import { CreateSubscriptionPlanDto } from './dto/create-subscription-plan.dto';
 import { UpdateSubscriptionPlanDto } from './dto/update-subscription-plan.dto';
 import { SubscriptionsService } from './subscriptions.service';
+import { ApiExcludeController } from '@nestjs/swagger';
 
 type CurrentSubscription = {
   plan: {
@@ -17,6 +18,7 @@ type CurrentSubscription = {
   endsAt: Date | null;
 };
 
+@ApiExcludeController()
 @Controller('subscribe')
 export class SubscriptionsController {
   constructor(private readonly subscriptionsService: SubscriptionsService, private readonly authService: AuthService,) {}

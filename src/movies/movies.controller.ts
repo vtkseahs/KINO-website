@@ -6,8 +6,9 @@ import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { AuthService } from '../auth/auth.service';
 import type { Request, Response } from 'express';
+import { ApiExcludeController } from '@nestjs/swagger';
 
-
+@ApiExcludeController()
 @Controller('movies')
 export class MoviesController {
   constructor(private readonly moviesService: MoviesService, private readonly authService: AuthService) {}

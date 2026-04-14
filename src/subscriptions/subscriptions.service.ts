@@ -103,4 +103,16 @@ export class SubscriptionsService {
       },
     });
   }
+
+  async findAllPlansPaginated(page: number, limit: number) {
+    const skip = (page-1)*limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.subscriptionPlan.findMany({ orderBy: { price: 'asc' }, skip, take: limit }),
+      this.prisma.subscriptionPlan.count(),
+    ]);
+
+    return { page, limit, total, data, };
+  }
+
 }

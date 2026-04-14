@@ -3,7 +3,9 @@ import type { Request, Response } from 'express';
 import { ProfileService } from './profile.service';
 import { AuthService } from '../auth/auth.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller('profile')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService, private readonly authService: AuthService) {}

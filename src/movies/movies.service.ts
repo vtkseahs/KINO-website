@@ -60,6 +60,9 @@ export class MoviesService {
         posterUrl: createMovieDto.posterUrl,
         genreId: Number(createMovieDto.genreId),
       },
+      include:{
+        genre:true
+      }
     });
 
     this.sendEvent(`Добавлен фильм: ${movie.title}`);
@@ -93,6 +96,9 @@ export class MoviesService {
             ? Number(updateMovieDto.genreId)
             : undefined,
       },
+      include:{
+        genre:true
+      }
     });
 
     this.sendEvent(`Изменен фильм: ${movie.title}`);
@@ -107,5 +113,47 @@ export class MoviesService {
     });
 
     this.sendEvent(`Удален фильм: ${movie.title}`);
+  }
+
+  async findAllPaginated(page: number, limit: number) {
+    const skip = (page-1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.movie.findMany({
+        include: { genre: true },
+        orderBy: { id: 'asc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.movie.count(),
+    ]);
+
+    return { page, limit, total, data };
+  }
+
+  async findReviewsByMovie(movieId: number, page: number, limit: number) {
+    await this.findOne(movieId);
+
+    const skip = (page-1)*limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.review.findMany({
+        where: { movieId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: { id: 'desc' }, skip, take: limit,
+      }),
+      this.prisma.review.count({
+        where: { movieId }
+      }),
+    ]);
+    return { page, limit, total, data };
   }
 }

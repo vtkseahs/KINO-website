@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { Prisma } from '../../generated/prisma/client.js';
 
 @Injectable()
 export class ProfileService {
@@ -21,12 +22,22 @@ export class ProfileService {
   async updateCurrentProfile(userId: number, updateProfileDto: UpdateProfileDto) {
     await this.getCurrentProfile(userId);
 
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        name: updateProfileDto.name,
-        email: updateProfileDto.email,
-      },
-    });
+    try {
+      return await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          name: updateProfileDto.name,
+          email: updateProfileDto.email,
+        },
+        include:{
+          subscriptionPlan: true
+        },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new ConflictException('Пользователь с такой почтой уже существует');
+      }
+      throw error;
+    }
   }
 }

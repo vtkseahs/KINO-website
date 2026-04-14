@@ -1,8 +1,8 @@
-import {ConflictException, Injectable, NotFoundException, } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class FavoritesService {
@@ -26,7 +26,7 @@ export class FavoritesService {
 
   async findOne(id: number, userId?: number) {
     const favorite = await this.prisma.favorite.findUnique({
-      where: { id },
+      where: { id, userId },
       include: {
         movie: {
           include: {
@@ -61,6 +61,13 @@ export class FavoritesService {
           userId,
           movieId: Number(createFavoriteDto.movieId),
         },
+        include: {
+          movie: {
+            include: {
+              genre: true,
+            },
+          },
+        },
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -81,6 +88,13 @@ export class FavoritesService {
         data: {
           movieId: Number(updateFavoriteDto.movieId),
         },
+        include: {
+          movie: {
+            include: {
+              genre: true,
+            },
+          },
+        },
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -98,5 +112,28 @@ export class FavoritesService {
     return this.prisma.favorite.delete({
       where: { id },
     });
+  }
+
+  async findAllPaginated(userId: number, page: number, limit: number) {
+    const skip = (page-1)*limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.favorite.findMany({
+        where: { userId },
+        include: {
+          movie: {
+            include: {
+              genre: true,
+            },
+          },
+        },
+        orderBy: { id: 'asc' }, skip, take: limit,
+      }),
+      this.prisma.favorite.count({
+        where: { userId }
+      }),
+    ]);
+
+    return { page, limit, total, data };
   }
 }

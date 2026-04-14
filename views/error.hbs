@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  {{> head}}
+</head>
+<body>
+{{> header}}
+
+<main class="content">
+  <section class="movie-form-page">
+    <div class="page-header auth-card">
+      <h2>Ошибка {{statusCode}}</h2>
+      <p>{{message}}</p>
+    </div>
+
+    <div class="section-actions">
+      <a href="/" class="button">На главную</a>
+      <a href="/movies" class="button button--secondary">К фильмам</a>
+    </div>
+  </section>
+</main>
+
+{{> footer}}
+{{> scripts}}
+</body>
+</html>
