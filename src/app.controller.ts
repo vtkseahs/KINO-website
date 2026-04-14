@@ -2,7 +2,9 @@ import { Controller, Get, Req, Render } from '@nestjs/common';
 import type { Request } from 'express';
 import { AuthService } from './auth/auth.service';
 import { MoviesService } from './movies/movies.service';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller()
 export class AppController {
   constructor(private readonly authService: AuthService,private readonly moviesService: MoviesService,) {}
