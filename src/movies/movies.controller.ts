@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, Render, Res, Sse, ParseIntPipe} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, Render, Res, Sse, ParseIntPipe, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, } from '@nestjs/common';
 import type { MessageEvent } from '@nestjs/common';
 import type { Observable } from 'rxjs';
 import { MoviesService } from './movies.service';
@@ -7,11 +7,13 @@ import { UpdateMovieDto } from './dto/update-movie.dto';
 import { AuthService } from '../auth/auth.service';
 import type { Request, Response } from 'express';
 import { ApiExcludeController } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { StorageService } from '../storage/storage.service';
 
 @ApiExcludeController()
 @Controller('movies')
 export class MoviesController {
-  constructor(private readonly moviesService: MoviesService, private readonly authService: AuthService) {}
+  constructor(private readonly moviesService: MoviesService, private readonly authService: AuthService,private readonly storageService: StorageService,) {}
   @Sse('events')
   events(): Observable<MessageEvent> {
     return this.moviesService.getEvents();
@@ -57,12 +59,24 @@ export class MoviesController {
   }
 
   @Post('add')
+  @UseInterceptors(FileInterceptor('poster'))
   async createMovie(
     @Req() req: Request,
     @Body() createMovieDto: CreateMovieDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        fileIsRequired: false,
+        validators: [new MaxFileSizeValidator({ maxSize: 5_000_000 }),],
+      }),
+    )
+    poster: Express.Multer.File | undefined,
     @Res() res: Response,
   ) {
     await this.authService.requireAdmin(req);
+    if (poster) {
+      createMovieDto.posterUrl = await this.storageService.uploadPoster(poster);
+    }
+
     const movie = await this.moviesService.create(createMovieDto);
     return res.redirect(`/movies/${movie.id}`);
   }
@@ -106,13 +120,25 @@ export class MoviesController {
   }
 
   @Post(':id/edit')
+  @UseInterceptors(FileInterceptor('poster'))
   async updateMovie(
     @Req() req: Request,
     @Param('id',ParseIntPipe) id: number,
     @Body() updateMovieDto: UpdateMovieDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        fileIsRequired: false,
+        validators: [new MaxFileSizeValidator({ maxSize: 5_000_000 })],
+      }),
+    )
+    poster: Express.Multer.File | undefined,
     @Res() res: Response,
   ) {
     await this.authService.requireAdmin(req);
+    if (poster) {
+      updateMovieDto.posterUrl = await this.storageService.uploadPoster(poster);
+    }
+
     await this.moviesService.update(id, updateMovieDto);
     return res.redirect(`/movies/${id}`);
   }

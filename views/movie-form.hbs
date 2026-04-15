@@ -10,8 +10,8 @@
   <section class="movie-form-page">
     <h2>{{title}}</h2>
 
-    <form action="{{formAction}}" method="POST" class="entity-form">
-      <div class="form-field">
+    <form action="{{formAction}}" method="POST" class="entity-form" enctype="multipart/form-data">
+    <div class="form-field">
         <label>Название</label>
         <input type="text" name="title" value="{{movie.title}}" required>
       </div>
@@ -38,7 +38,16 @@
 
       <div class="form-field">
         <label>Постер</label>
-        <input type="text" name="posterUrl" value="{{movie.posterUrl}}">
+        {{#if movie.posterUrl}}
+          <img
+            src="{{movie.posterUrl}}"
+            alt="{{movie.title}}"
+            style="max-width: 180px; border-radius: 12px; margin-bottom: 10px;"
+          >
+        {{/if}}
+
+        <input type="file" name="poster">
+        <input type="text" name="posterUrl" value="{{movie.posterUrl}}" placeholder="Или вставьте ссылку на постер">
       </div>
 
       <div class="form-field">

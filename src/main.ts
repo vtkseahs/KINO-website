@@ -5,12 +5,16 @@ import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ApiExceptionFilter } from './filters/api-exception.filter';
+import { ElapsedTimeInterceptor } from './interceptors/interceptor';
+import { PublicCacheInterceptor } from './interceptors/etag-interceptor';
+
 const hbs = require('hbs');
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useGlobalFilters(new ApiExceptionFilter());
   app.useGlobalPipes(new ValidationPipe({}));
+  app.useGlobalInterceptors(new ElapsedTimeInterceptor(), new PublicCacheInterceptor());
   app.useStaticAssets(join(process.cwd(), 'public'));
   app.setBaseViewsDir(join(process.cwd(), 'views'));
   app.setViewEngine('hbs');

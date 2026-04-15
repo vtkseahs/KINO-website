@@ -1,4 +1,8 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, Query, Req, Res, UnauthorizedException, UsePipes, ValidationPipe, } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, Query, Req, Res, UnauthorizedException, UsePipes, ValidationPipe, FileTypeValidator,
+  MaxFileSizeValidator,
+  ParseFilePipe,
+  UploadedFile,
+  UseInterceptors,} from '@nestjs/common';
 import { ApiBadRequestResponse, ApiForbiddenResponse, ApiCookieAuth, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags, ApiUnauthorizedResponse, } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { AuthService } from '../auth/auth.service';
@@ -8,12 +12,15 @@ import { MovieResponseDto, MoviesPageResponseDto } from './dto/movie-response.dt
 import { MovieReviewsPageResponseDto } from './dto/movie-review-response.dto';
 import { UpdateMovieApiDto } from './dto/update-movie-api.dto';
 import { MoviesService } from './movies.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { StorageService } from '../storage/storage.service';
 
 @ApiTags('movies')
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 @Controller('api/movies')
 export class MoviesApiController {
-  constructor(private readonly moviesService: MoviesService, private readonly authService: AuthService,) {}
+  constructor(private readonly moviesService: MoviesService, private readonly authService: AuthService,private readonly storageService: StorageService,) {}
 
   @Get()
   @ApiOperation({ summary: 'Получить список фильмов' })
@@ -97,5 +104,39 @@ export class MoviesApiController {
   async remove(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
     await this.authService.requireAdmin(req);
     await this.moviesService.remove(id);
+  }
+  @Post('upload-poster')
+  @ApiCookieAuth('userId')
+  @ApiOperation({ summary: 'Загрузить постер фильма' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ schema: {
+      type: 'object',
+      properties: {
+        poster: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+      required: ['poster'],
+    },
+  })
+
+  @UseInterceptors(FileInterceptor('poster'))
+  async uploadPoster(
+    @Req() req: Request,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5_000_000 }),
+        ],
+      }),
+    )
+    poster: Express.Multer.File,
+  ) {
+    await this.authService.requireAdmin(req);
+
+    const url = await this.storageService.uploadPoster(poster);
+
+    return { url };
   }
 }

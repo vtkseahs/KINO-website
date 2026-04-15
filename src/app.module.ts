@@ -13,8 +13,10 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { join } from 'path';
+import { ConfigModule } from '@nestjs/config';
+
 @Module({
-  imports: [MoviesModule, FavoritesModule, ProfileModule, ReviewsModule,PrismaModule,AuthModule, SubscriptionsModule,
+  imports: [ConfigModule.forRoot({ isGlobal: true, }), MoviesModule, FavoritesModule, ProfileModule, ReviewsModule,PrismaModule,AuthModule, SubscriptionsModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),

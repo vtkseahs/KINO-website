@@ -45,8 +45,14 @@
     window.addEventListener("load", () => {
         const navEntry = performance.getEntriesByType("navigation")[0];
         const box = document.getElementById("loadTime");
-        if (box && navEntry) {
-            box.innerText = `Страница загрузилась за ${Math.round(navEntry.loadEventEnd)} мс`;
+        if (!box || !navEntry) return;
+        const clientMs = Math.round(navEntry.loadEventEnd || performance.now());
+        const serverMs = box.dataset.serverElapsedTime;
+
+        if (serverMs) {
+            box.innerText = `Сервер: ${serverMs} мс | Клиент: ${clientMs} мс`;
+        } else {
+            box.innerText = `Клиент: ${clientMs} мс`;
         }
     });
 

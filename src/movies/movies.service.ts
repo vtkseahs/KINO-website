@@ -1,15 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import type { MessageEvent } from '@nestjs/common';
 import { Subject } from 'rxjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class MoviesService {
   private readonly events$ = new Subject<MessageEvent>();
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService,
+              @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,) {}
 
   getEvents() {
     return this.events$.asObservable();
@@ -120,6 +123,16 @@ export class MoviesService {
   }
 
   async findAllPaginated(page: number, limit: number) {
+    const cacheKey = `movies:${page}:${limit}`;
+    const cached = await this.cacheManager.get<{
+      page: number;
+      limit: number;
+      total: number;
+      data: unknown[]; }>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
     const skip = (page-1) * limit;
 
     const [data, total] = await Promise.all([
@@ -132,7 +145,9 @@ export class MoviesService {
       this.prisma.movie.count(),
     ]);
 
-    return { page, limit, total, data };
+    const result={ page, limit, total, data };
+    await this.cacheManager.set(cacheKey, result, 5000);
+    return result;
   }
 
   async findReviewsByMovie(movieId: number, page: number, limit: number) {
