@@ -1,90 +1,89 @@
 import { ConflictException, ForbiddenException, Injectable, UnauthorizedException, } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { Prisma, Role } from '../../generated/prisma/client.js';
+import SuperTokens from 'supertokens-node';
+import type { RecipeUserId } from 'supertokens-node';
+import EmailPassword from 'supertokens-node/recipe/emailpassword';
+import Session from 'supertokens-node/recipe/session';
+import { Role } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service';
+
+const userSelect = {
+  id: true,
+  email: true,
+  name: true,
+  role: true,
+};
 
 @Injectable()
 export class AuthService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async login(login: string, password: string) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        password,
-        OR: [
-          { email: login },
-          { name: login },
-        ],
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-      },
-    });
+  async login(email: string, password: string, req?: Request, res?: Response,) {
+    const result = await EmailPassword.signIn('public', email, password);
 
-    return user;
-  }
-
-  async register(name: string, email: string, password: string) {
-    try {
-      return await this.prisma.user.create({
-        data: {
-          name,
-          email,
-          password,
-          role: Role.USER,
-        },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          role: true,
-        },
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
-        throw new ConflictException('Пользователь с таким email уже существует');
-      }
-
-      throw error;
-    }
-  }
-
-  async getCurrentUser(req: Request) {
-    const rawUserId = req.headers.cookie
-      ?.split(';')
-      .map((item) => item.trim())
-      .find((item) => item.startsWith('userId='))
-      ?.split('=')[1];
-
-    if (!rawUserId) {
+    if (result.status === 'WRONG_CREDENTIALS_ERROR') {
       return null;
     }
 
-    const userId = Number(rawUserId);
+    await this.createSuperTokensSession(req, res, result.recipeUserId);
 
-    if (!Number.isInteger(userId)) {
-      return null;
-    }
-
-    return this.prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-      },
+    return this.syncLocalUser({
+      superTokensUserId: result.user.id,
+      email: result.user.emails[0] ?? email,
+      name: result.user.emails[0]?.split('@')[0],
     });
   }
 
-  async getAuthData(req: Request) {
-    const user = await this.getCurrentUser(req);
+  async register(name: string, email: string, password: string, req?: Request, res?: Response,) {
+    const result = await EmailPassword.signUp('public', email, password);
+
+    if (result.status === 'EMAIL_ALREADY_EXISTS_ERROR') {
+      throw new ConflictException('Пользователь с таким email уже существует');
+    }
+
+    await this.createSuperTokensSession(req, res, result.recipeUserId);
+
+    return this.syncLocalUser({
+      superTokensUserId: result.user.id,
+      email,
+      name,
+    });
+  }
+
+  async getCurrentUser(req: Request, res?: Response) {
+    const session = await this.getOptionalSession(req, res);
+
+    if (!session) {
+      return null;
+    }
+
+    const superTokensUserId = session.getUserId();
+
+    const localUser = await this.prisma.user.findUnique({
+      where: { superTokensUserId },
+      select: userSelect,
+    });
+
+    if (localUser) {
+      return localUser;
+    }
+
+    const superTokensUser = await SuperTokens.getUser(superTokensUserId);
+    const email = superTokensUser?.emails[0];
+
+    if (!email) {
+      return null;
+    }
+
+    return this.syncLocalUser({
+      superTokensUserId,
+      email,
+      name: email.split('@')[0],
+    });
+  }
+
+  async getAuthData(req: Request, res?: Response) {
+    const user = await this.getCurrentUser(req, res);
 
     return {
       isAuth: !!user,
@@ -93,8 +92,8 @@ export class AuthService {
     };
   }
 
-  async requireUser(req: Request) {
-    const user = await this.getCurrentUser(req);
+  async requireUser(req: Request, res?: Response) {
+    const user = await this.getCurrentUser(req, res);
 
     if (!user) {
       throw new UnauthorizedException('Необходимо войти в аккаунт');
@@ -103,8 +102,8 @@ export class AuthService {
     return user;
   }
 
-  async requireAdmin(req: Request) {
-    const user = await this.requireUser(req);
+  async requireAdmin(req: Request, res?: Response) {
+    const user = await this.requireUser(req, res);
 
     if (user.role !== Role.ADMIN) {
       throw new ForbiddenException('Недостаточно прав');
@@ -113,15 +112,86 @@ export class AuthService {
     return user;
   }
 
-  setUserCookie(res: Response, userId: number) {
-    res.cookie('userId', String(userId), {
-      path: '/',
+  async logout(req: Request, res: Response) {
+    const session = await this.getOptionalSession(req, res);
+
+    if (session) {
+      await session.revokeSession();
+    }
+
+    this.clearSessionCookies(res);
+  }
+
+  private async syncLocalUser(params: {
+    superTokensUserId: string;
+    email: string;
+    name?: string;
+  }) {
+    const existingBySuperTokensId = await this.prisma.user.findUnique({
+      where: { superTokensUserId: params.superTokensUserId },
+      select: userSelect,
+    });
+
+    if (existingBySuperTokensId) {
+      return existingBySuperTokensId;
+    }
+
+    const existingByEmail = await this.prisma.user.findUnique({
+      where: { email: params.email },
+      select: userSelect,
+    });
+
+    if (existingByEmail) {
+      return this.prisma.user.update({
+        where: { id: existingByEmail.id },
+        data: {
+          superTokensUserId: params.superTokensUserId,
+        },
+        select: userSelect,
+      });
+    }
+
+    return this.prisma.user.create({
+      data: {
+        email: params.email,
+        name: params.name || params.email.split('@')[0],
+        password: '',
+        role: Role.USER,
+        superTokensUserId: params.superTokensUserId,
+      },
+      select: userSelect,
     });
   }
 
-  clearUserCookie(res: Response) {
-    res.clearCookie('userId', {
-      path: '/',
-    });
+  private async createSuperTokensSession(
+    req: Request | undefined,
+    res: Response | undefined,
+    recipeUserId: RecipeUserId,
+  ) {
+    if (!req || !res) {
+      return;
+    }
+
+    await Session.createNewSession(req, res, 'public', recipeUserId);
+  }
+
+  private async getOptionalSession(req: Request, res?: Response) {
+    try {
+      if (!res) {
+        return undefined;
+      }
+      return await Session.getSession(req, res, {
+        sessionRequired: false,
+        antiCsrfCheck: false,
+      });
+    } catch {
+      return undefined;
+    }
+  }
+
+  private clearSessionCookies(res: Response) {
+    res.clearCookie('sAccessToken', { path: '/' });
+    res.clearCookie('sRefreshToken', { path: '/' });
+    res.clearCookie('sFrontToken', { path: '/' });
   }
 }

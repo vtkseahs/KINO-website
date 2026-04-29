@@ -17,6 +17,8 @@ model User {
   updatedAt DateTime @updatedAt
   role      Role     @default(USER)
 
+  superTokensUserId String? @unique
+
   subscriptionPlanId Int?
   subscriptionEndsAt DateTime?
   subscriptionPlan SubscriptionPlan? @relation(fields: [subscriptionPlanId], references: [id])

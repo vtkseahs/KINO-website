@@ -57,7 +57,7 @@ export class ProfileController {
   ) {
     const currentUser = await this.authService.requireUser(req);
     await this.profileService.removeProfile(currentUser.id);
-    this.authService.clearUserCookie(res);
+    await this.authService.logout(req, res);
     return res.redirect('/');
   }
 }

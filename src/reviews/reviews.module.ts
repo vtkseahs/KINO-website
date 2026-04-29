@@ -4,9 +4,10 @@ import { ReviewsController } from './reviews.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ReviewsApiController } from './reviews-api.controller';
 import { ReviewsResolver } from './graphql/reviews.resolver';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, UsersModule],
   controllers: [ReviewsController, ReviewsApiController],
   providers: [ReviewsService, ReviewsResolver],
 })

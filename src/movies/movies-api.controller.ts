@@ -15,6 +15,10 @@ import { MoviesService } from './movies.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { StorageService } from '../storage/storage.service';
+import { UseGuards } from '@nestjs/common';
+import { Role } from '../../generated/prisma/client.js';
+import { SuperTokensAuthGuard } from '../st-auth/guards/st-auth.guard';
+import { Roles } from '../st-auth/decorators/roles.decorator';
 
 @ApiTags('movies')
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
@@ -65,19 +69,22 @@ export class MoviesApiController {
   }
 
   @Post()
-  @ApiCookieAuth('userId')
+  @UseGuards(SuperTokensAuthGuard)
+  @Roles(Role.ADMIN)
+  @ApiCookieAuth('sAccessToken')
   @ApiOperation({ summary: 'Создать фильм' })
   @ApiCreatedResponse({ type: MovieResponseDto })
   @ApiBadRequestResponse({ description: 'Некорректное тело запроса' })
   @ApiUnauthorizedResponse({ description: 'Пользователь не авторизован' })
   @ApiForbiddenResponse({ description: 'Недостаточно прав' })
-  async create(@Req() req: Request, @Body() dto: CreateMovieApiDto) {
-    await this.authService.requireAdmin(req);
+  async create(@Body() dto: CreateMovieApiDto) {
     return this.moviesService.create(dto);
   }
 
   @Patch(':id')
-  @ApiCookieAuth('userId')
+  @UseGuards(SuperTokensAuthGuard)
+  @Roles(Role.ADMIN)
+  @ApiCookieAuth('sAccessToken')
   @ApiOperation({ summary: 'Обновить фильм' })
   @ApiOkResponse({ type: MovieResponseDto })
   @ApiBadRequestResponse({ description: 'Некорректный id или тело запроса' })
@@ -85,28 +92,29 @@ export class MoviesApiController {
   @ApiForbiddenResponse({ description: 'Недостаточно прав' })
   @ApiNotFoundResponse({ description: 'Фильм не найден' })
   async update(
-    @Req() req: Request,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateMovieApiDto) {
-    await this.authService.requireAdmin(req);
     return this.moviesService.update(id, dto);
   }
 
   @Delete(':id')
+  @UseGuards(SuperTokensAuthGuard)
+  @Roles(Role.ADMIN)
   @HttpCode(204)
-  @ApiCookieAuth('userId')
+  @ApiCookieAuth('sAccessToken')
   @ApiOperation({ summary: 'Удалить фильм' })
   @ApiNoContentResponse({ description: 'Фильм удален' })
   @ApiBadRequestResponse({ description: 'Некорректный id' })
   @ApiUnauthorizedResponse({ description: 'Пользователь не авторизован' })
   @ApiForbiddenResponse({ description: 'Недостаточно прав' })
   @ApiNotFoundResponse({ description: 'Фильм не найден' })
-  async remove(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
-    await this.authService.requireAdmin(req);
+  async remove(@Param('id', ParseIntPipe) id: number) {
     await this.moviesService.remove(id);
   }
   @Post('upload-poster')
-  @ApiCookieAuth('userId')
+  @UseGuards(SuperTokensAuthGuard)
+  @Roles(Role.ADMIN)
+  @ApiCookieAuth('sAccessToken')
   @ApiOperation({ summary: 'Загрузить постер фильма' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({ schema: {
@@ -123,7 +131,6 @@ export class MoviesApiController {
 
   @UseInterceptors(FileInterceptor('poster'))
   async uploadPoster(
-    @Req() req: Request,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -133,7 +140,6 @@ export class MoviesApiController {
     )
     poster: Express.Multer.File,
   ) {
-    await this.authService.requireAdmin(req);
 
     const url = await this.storageService.uploadPoster(poster);
 

@@ -4,9 +4,10 @@ import { ProfileController } from './profile.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ProfileApiController } from './profile-api.controller';
 import { ProfileResolver } from './graphql/profile.resolver';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, UsersModule],
   controllers: [ProfileController, ProfileApiController],
   providers: [ProfileService,ProfileResolver],
 })

@@ -43,8 +43,8 @@ export class MoviesController {
   @Get('add')
   @Render('movie-form')
   async getAddMoviePage(@Req() req: Request, @Res() res: Response) {
+    await this.authService.requireAdmin(req);
     const auth = await this.authService.getAuthData(req);
-    if (!auth) return;
 
     const genres = await this.moviesService.findGenres();
 
@@ -103,8 +103,8 @@ export class MoviesController {
     @Req() req: Request,
     @Res() res: Response,
   ) {
+    await this.authService.requireAdmin(req);
     const auth = await this.authService.getAuthData(req);
-    if (!auth) return;
 
     const movie = await this.moviesService.findOne(id);
     const genres = await this.moviesService.findGenres();

@@ -29,8 +29,8 @@ export class ReviewsController {
 
   @Get('add')
   async getAddReviewPage(@Req() req: Request, @Res() res: Response) {
+    await this.authService.requireUser(req);
     const auth = await this.authService.getAuthData(req);
-    if (!auth) return;
 
     const movies = await this.reviewsService.findMovies();
 

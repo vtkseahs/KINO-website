@@ -27,8 +27,8 @@ export class FavoritesController {
 
   @Get('add')
   async getAddFavoritePage(@Req() req: Request, @Res() res: Response) {
+    await this.authService.requireUser(req);
     const auth = await this.authService.getAuthData(req);
-    if (!auth) return;
 
     const movies = await this.favoritesService.findMovies();
 

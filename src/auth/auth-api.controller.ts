@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, Query, Req, Res, UnauthorizedException, UsePipes, ValidationPipe, } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiConflictResponse, ApiCookieAuth, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags, ApiUnauthorizedResponse, } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, Post, Req, Res, UnauthorizedException, UsePipes, ValidationPipe, } from '@nestjs/common';
+import { ApiBadRequestResponse, ApiConflictResponse, ApiCookieAuth, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse, } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginApiDto } from './dto/login-api.dto';
@@ -18,15 +18,16 @@ export class AuthApiController {
   @ApiBadRequestResponse({ description: 'Некорректный запрос' })
   @ApiUnauthorizedResponse({ description: 'Неверный логин или пароль' })
   async login(
+    @Req() req: Request,
     @Body() dto: LoginApiDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const user = await this.authService.login(dto.login, dto.password);
+    const user = await this.authService.login(dto.login, dto.password, req, res);
 
     if (!user) {
       throw new UnauthorizedException('Неверный логин или пароль');
     }
-    this.authService.setUserCookie(res, user.id);
+
     return user;
   }
 
@@ -34,27 +35,31 @@ export class AuthApiController {
   @ApiOperation({ summary: 'Зарегистрировать нового пользователя' })
   @ApiCreatedResponse({ type: AuthUserResponseDto })
   @ApiBadRequestResponse({ description: 'Некорректный запрос' })
-  @ApiConflictResponse({ description: 'Пользователь с такой почтой уже существует' })
+  @ApiConflictResponse({
+    description: 'Пользователь с такой почтой уже существует',
+  })
   async register(
+    @Req() req: Request,
     @Body() dto: RegisterApiDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const user = await this.authService.register(dto.name, dto.email, dto.password,);
-
-    this.authService.setUserCookie(res, user.id);
-    return user;
+    return this.authService.register(dto.name, dto.email, dto.password, req, res);
   }
 
   @Post('logout')
   @HttpCode(204)
+  @ApiCookieAuth('sAccessToken')
   @ApiOperation({ summary: 'Выйти из аккаунта' })
   @ApiNoContentResponse({ description: 'Выход выполнен' })
-  async logout(@Res({ passthrough: true }) res: Response) {
-    this.authService.clearUserCookie(res);
+  async logout(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.authService.logout(req, res);
   }
 
   @Get('me')
-  @ApiCookieAuth('userId')
+  @ApiCookieAuth('sAccessToken')
   @ApiOperation({ summary: 'Получить текущего пользователя' })
   @ApiOkResponse({ type: AuthUserResponseDto })
   @ApiUnauthorizedResponse({ description: 'Пользователь не авторизован' })

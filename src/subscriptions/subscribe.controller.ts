@@ -44,8 +44,8 @@ export class SubscriptionsController {
 
   @Get('add')
   async getAddPlanPage(@Req() req: Request, @Res() res: Response) {
+    await this.authService.requireAdmin(req);
     const auth = await this.authService.getAuthData(req);
-    if (!auth) return;
 
     return res.render('subscription-form', {
       ...auth,
@@ -89,8 +89,8 @@ export class SubscriptionsController {
     @Req() req: Request,
     @Res() res: Response,
   ) {
+    await this.authService.requireAdmin(req);
     const auth = await this.authService.getAuthData(req);
-    if (!auth) return;
 
     const plan = await this.subscriptionsService.findPlan(id);
 
