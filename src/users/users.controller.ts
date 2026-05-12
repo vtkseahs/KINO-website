@@ -5,7 +5,9 @@ import { UnauthorizedException } from '@nestjs/common';
 import { SuperTokensAuthGuard } from '../st-auth/guards/st-auth.guard';
 import type { StRequest } from '../st-auth/types/st-request';
 import { UsersService } from './users.service';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @ApiTags('users')
 @Controller('api/users')
 export class UsersController {

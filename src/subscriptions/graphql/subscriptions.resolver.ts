@@ -1,4 +1,4 @@
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Query, Resolver, Context} from '@nestjs/graphql';
 import { SubscriptionsService } from '../subscriptions.service';
 import { SubscriptionPlanModel } from './models/subscription-plan.model';
 import { SubscriptionPlansPageModel } from './models/subscription-plans-page.model';
@@ -6,10 +6,16 @@ import { CurrentSubscriptionModel } from './models/current-subscription.model';
 import { CreateSubscriptionPlanInput } from './inputs/create-subscription-plan.input';
 import { UpdateSubscriptionPlanInput } from './inputs/update-subscription-plan.input';
 import { SubscriptionsPaginationInput } from './inputs/subscriptions-pagination.input';
+import { UseGuards } from '@nestjs/common';
+import { Role } from '../../../generated/prisma/client.js';
+import { SuperTokensAuthGuard } from '../../st-auth/guards/st-auth.guard';
+import { Roles } from '../../st-auth/decorators/roles.decorator';
+import { UsersService } from '../../users/users.service';
+import type { StRequest } from '../../st-auth/types/st-request';
 
 @Resolver(() => SubscriptionPlanModel)
 export class SubscriptionsResolver {
-  constructor(private readonly subscriptionsService: SubscriptionsService) {}
+  constructor(private readonly subscriptionsService: SubscriptionsService, private readonly usersService: UsersService,) {}
 
   @Query(() => SubscriptionPlansPageModel, {
     name: 'get_all_subscriptionPlans',
@@ -35,16 +41,18 @@ export class SubscriptionsResolver {
     return this.subscriptionsService.findPlan(id);
   }
 
+  @UseGuards(SuperTokensAuthGuard)
   @Query(() => CurrentSubscriptionModel, {
     name: 'currentSubscription',
     description: 'Получить текущую подписку пользователя',
   })
-  async getCurrentSubscription(
-    @Args('userId', { type: () => Int }) userId: number,
-  ) {
-    return this.subscriptionsService.getCurrentUserSubscription(userId);
+  async getCurrentSubscription(@Context('req') req: StRequest){
+    const user = await this.usersService.findBySuperTokensUserId(req.superTokensUserId);
+    return this.subscriptionsService.getCurrentUserSubscription(user.id);
   }
 
+  @UseGuards(SuperTokensAuthGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => SubscriptionPlanModel, {
     name: 'createSubscriptionPlan',
     description: 'Создать тариф',
@@ -55,6 +63,8 @@ export class SubscriptionsResolver {
     return this.subscriptionsService.createPlan(input);
   }
 
+  @UseGuards(SuperTokensAuthGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => SubscriptionPlanModel, {
     name: 'updateSubscriptionPlan',
     description: 'Обновить тариф',
@@ -66,6 +76,8 @@ export class SubscriptionsResolver {
     return this.subscriptionsService.updatePlan(id, input);
   }
 
+  @UseGuards(SuperTokensAuthGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Boolean, {
     name: 'removeSubscriptionPlan',
     description: 'Удалить тариф',
@@ -77,25 +89,29 @@ export class SubscriptionsResolver {
     return true;
   }
 
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => SubscriptionPlanModel, {
     name: 'buySubscription',
     description: 'Оформить подписку на тариф',
   })
-  async buySubscription(
-    @Args('planId', { type: () => Int }) planId: number,
-    @Args('userId', { type: () => Int }) userId: number,
-  ) {
-    return this.subscriptionsService.buyPlan(planId, userId);
+  async buySubscription(@Context('req') req: StRequest, @Args('planId', { type: () => Int }) planId: number) {
+    const user = await this.usersService.findBySuperTokensUserId(
+      req.superTokensUserId,
+    );
+
+    return this.subscriptionsService.buyPlan(planId, user.id);
   }
 
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Boolean, {
     name: 'cancelSubscription',
     description: 'Отменить текущую подписку пользователя',
   })
-  async cancelSubscription(
-    @Args('userId', { type: () => Int }) userId: number,
-  ) {
-    await this.subscriptionsService.cancelSubscription(userId);
+  async cancelSubscription(@Context('req') req: StRequest) {
+    const user = await this.usersService.findBySuperTokensUserId(
+      req.superTokensUserId,
+    );
+    await this.subscriptionsService.cancelSubscription(user.id);
     return true;
   }
 }

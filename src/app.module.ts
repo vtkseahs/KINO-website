@@ -25,7 +25,8 @@ import { UsersModule } from './users/users.module';
       sortSchema: true,
       playground: false,
       introspection: true,
-      plugins: [ApolloServerPluginLandingPageLocalDefault(), new GraphqlComplexityPlugin(10)],
+      context: ({req,res})=>({req,res}),
+      plugins: [ApolloServerPluginLandingPageLocalDefault(), new GraphqlComplexityPlugin(50)],
     }),
     StAuthModule.forRoot({
       connectionURI: process.env.SUPERTOKENS_CONNECTION_URI!,

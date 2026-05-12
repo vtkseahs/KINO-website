@@ -15,6 +15,9 @@ export class PublicCacheInterceptor implements NestInterceptor {
   ];
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    if (context.getType<string>() === 'graphql') {
+      return next.handle();
+    }
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
 

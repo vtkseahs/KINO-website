@@ -9,10 +9,9 @@ export class ElapsedTimeInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const startedAt = performance.now();
-    const request = this.getRequest(context);
-    const response = this.getResponse(context);
+    const { request,response } = this.getRequestResponse(context);
 
-    if (request && response && this.isPageRequest(request)) {
+    if (request && this.canRender(response) && this.isPageRequest(request)) {
       this.patchRender(response, startedAt);
     }
 
@@ -20,11 +19,11 @@ export class ElapsedTimeInterceptor implements NestInterceptor {
       map((data) => {
         const elapsedMs = this.getElapsedMs(startedAt);
 
-        if (response && !response.headersSent) {
+        if (this.canSetHeaders(response) && !response.headersSent) {
           response.setHeader('X-Elapsed-Time', `${elapsedMs}ms`);
         }
 
-        if (request && response && this.isPageRequest(request) && this.isPlainObject(data)) {
+        if (request && this.canRender(response) && this.isPageRequest(request) && this.isPlainObject(data)) {
           response.locals.serverElapsedTimeMs = elapsedMs;
           return {
             ...data,
@@ -40,29 +39,22 @@ export class ElapsedTimeInterceptor implements NestInterceptor {
     );
   }
 
-  private getRequest(context: ExecutionContext): Request | undefined {
-    const httpRequest = context.switchToHttp().getRequest<Request>();
-    if (httpRequest) {
-      return httpRequest;
-    }
-    if (context.getType<'graphql'>() === 'graphql') {
-      const gqlContext = GqlExecutionContext.create(context).getContext<{ req?: Request }>();
-      return gqlContext?.req;
-    }
+  private getRequestResponse(context: ExecutionContext) {
+    if (context.getType<string>() === 'graphql') {
+      const gqlContext = GqlExecutionContext.create(context).getContext<{
+        req?: Request;
+        res?: Response;
+      }>();
 
-    return undefined;
-  }
+      return {
+        request: gqlContext?.req,
+        response: gqlContext?.res,
+      };}
 
-  private getResponse(context: ExecutionContext): Response | undefined {
-    const httpResponse = context.switchToHttp().getResponse<Response>();
-    if (httpResponse) {
-      return httpResponse;
-    }
-    if (context.getType<'graphql'>() === 'graphql') {
-      const gqlContext = GqlExecutionContext.create(context).getContext<{ res?: Response }>();
-      return gqlContext?.res;
-    }
-    return undefined;
+    return {
+      request: context.switchToHttp().getRequest<Request>(),
+      response: context.switchToHttp().getResponse<Response>(),
+    };
   }
 
   private isPageRequest(request: Request): boolean {
@@ -101,6 +93,18 @@ export class ElapsedTimeInterceptor implements NestInterceptor {
     const type = context.getType<string>();
     const path = request?.originalUrl || request?.url || 'unknown';
     this.logger.log(`${type.toUpperCase()} ${path} - ${elapsedMs}ms`);
+  }
+
+  private canSetHeaders(response: unknown): response is Response {
+    return !!response && typeof (response as Response).setHeader === 'function';
+  }
+
+  private canRender(response: unknown): response is Response {
+    return (
+      this.canSetHeaders(response) &&
+      typeof (response as Response).render === 'function' &&
+      !!(response as Response).locals
+    );
   }
 
   private isPlainObject(value: unknown): value is Record<string, unknown> {

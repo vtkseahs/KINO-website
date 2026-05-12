@@ -172,26 +172,49 @@ export class AuthService {
       return;
     }
 
+    req.headers['st-auth-mode'] = 'cookie';
     await Session.createNewSession(req, res, 'public', recipeUserId);
   }
 
   private async getOptionalSession(req: Request, res?: Response) {
     try {
-      if (!res) {
+      if (res) {
+        return await Session.getSession(req, res, {
+          sessionRequired: false,
+          antiCsrfCheck: false,
+        });
+      }
+
+      const accessToken = this.getCookieValue(req, 'sAccessToken');
+
+      if (!accessToken) {
         return undefined;
       }
-      return await Session.getSession(req, res, {
-        sessionRequired: false,
-        antiCsrfCheck: false,
-      });
+
+      return await Session.getSessionWithoutRequestResponse(accessToken, undefined, {
+          sessionRequired: false,
+          antiCsrfCheck: false,
+        });
     } catch {
       return undefined;
     }
   }
 
+  private getCookieValue(req: Request, name: string) {
+    const rawValue = req.headers.cookie
+      ?.split(';')
+      .map((item) => item.trim())
+      .find((item) => item.startsWith(`${name}=`))
+      ?.split('=')[1];
+
+    return rawValue ? decodeURIComponent(rawValue) : undefined;
+  }
+
   private clearSessionCookies(res: Response) {
+    res.clearCookie('userId', { path: '/' });
     res.clearCookie('sAccessToken', { path: '/' });
     res.clearCookie('sRefreshToken', { path: '/' });
     res.clearCookie('sFrontToken', { path: '/' });
+    res.clearCookie('sRefreshToken', { path: '/auth/session/refresh' });
   }
 }

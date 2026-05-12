@@ -6,6 +6,10 @@ import { CreateMovieInput } from './inputs/create-movie.input';
 import { UpdateMovieInput } from './inputs/update-movie.input';
 import { MoviesPaginationInput } from './inputs/movies-pagination.input';
 import { GenreModel } from './models/genre.model';
+import { UseGuards } from '@nestjs/common';
+import { Role } from '../../../generated/prisma/client.js';
+import { SuperTokensAuthGuard } from '../../st-auth/guards/st-auth.guard';
+import { Roles } from '../../st-auth/decorators/roles.decorator';
 
 @Resolver(() => MovieModel)
 export class MoviesResolver {
@@ -25,12 +29,16 @@ export class MoviesResolver {
     return this.moviesService.findOne(id);
   }
 
+  @UseGuards(SuperTokensAuthGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => MovieModel, { name: 'createMovie', description: 'Создать фильм' })
   async create(
     @Args('input') input: CreateMovieInput) {
     return this.moviesService.create(input);
   }
 
+  @UseGuards(SuperTokensAuthGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => MovieModel, { name: 'updateMovie', description: 'Обновить фильм' })
   async update(
     @Args('id', { type: () => Int }) id: number,
@@ -38,6 +46,8 @@ export class MoviesResolver {
     return this.moviesService.update(id, input);
   }
 
+  @UseGuards(SuperTokensAuthGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Boolean, { name: 'removeMovie', description: 'Удалить фильм' })
   async remove(
     @Args('id', { type: () => Int }) id: number) {

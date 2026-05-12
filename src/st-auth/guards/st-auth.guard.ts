@@ -13,6 +13,7 @@ import { PUBLIC_ACCESS_KEY } from '../decorators/public-access.decorator';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import type { Response } from 'express';
 import type { StRequest } from '../types/st-request';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 @Injectable()
 export class SuperTokensAuthGuard implements CanActivate {
@@ -31,8 +32,11 @@ export class SuperTokensAuthGuard implements CanActivate {
       return true;
     }
 
-    const req = context.switchToHttp().getRequest<StRequest>();
-    const res = context.switchToHttp().getResponse<Response>();
+    const { req, res } = this.getRequestResponse(context);
+
+    if (!req || !res) {
+      throw new UnauthorizedException('Пользователь не авторизован');
+    }
 
     let session;
 
@@ -73,4 +77,20 @@ export class SuperTokensAuthGuard implements CanActivate {
     }
     return true;
   }
+
+  private getRequestResponse(context: ExecutionContext) {
+    if (context.getType<string>() === 'graphql') {
+      const gqlContext = GqlExecutionContext.create(context).getContext<{ req: StRequest; res: Response }>();
+
+      return {
+        req: gqlContext.req,
+        res: gqlContext.res,
+      };
+    }
+    return {
+      req: context.switchToHttp().getRequest<StRequest>(),
+      res: context.switchToHttp().getResponse<Response>(),
+    };
+  }
+
 }

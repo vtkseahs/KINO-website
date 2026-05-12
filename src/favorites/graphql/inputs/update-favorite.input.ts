@@ -4,7 +4,4 @@ import { Field, InputType, Int } from '@nestjs/graphql';
 export class UpdateFavoriteInput {
   @Field(() => Int, { description: 'id фильма' })
   movieId: number;
-
-  @Field(() => Int, { description: 'id пользователя' })
-  userId: number;
 }

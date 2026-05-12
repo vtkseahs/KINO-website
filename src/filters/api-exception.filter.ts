@@ -5,6 +5,9 @@ import { Prisma } from '../../generated/prisma/client.js';
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
+    if (host.getType<string>() === 'graphql') {
+      throw exception;
+    }
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();

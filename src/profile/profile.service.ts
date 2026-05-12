@@ -10,7 +10,17 @@ export class ProfileService {
   async getCurrentProfile(userId: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: {subscriptionPlan: true},
+      select:{
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        subscriptionPlanId: true,
+        subscriptionEndsAt: true,
+        subscriptionPlan: true,
+      },
     });
 
     if (!user) {
@@ -29,8 +39,16 @@ export class ProfileService {
           name: updateProfileDto.name !== undefined ? updateProfileDto.name : undefined,
           email: updateProfileDto.email!== undefined ? updateProfileDto.email : undefined,
         },
-        include:{
-          subscriptionPlan: true
+        select:{
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+          subscriptionPlanId: true,
+          subscriptionEndsAt: true,
+          subscriptionPlan: true,
         },
       });
     } catch (error) {

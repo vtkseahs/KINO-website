@@ -10,7 +10,4 @@ export class CreateReviewInput {
 
   @Field(() => Int, { description: 'id фильма' })
   movieId: number;
-
-  @Field(() => Int, { description: 'id пользователя' })
-  userId: number;
 }

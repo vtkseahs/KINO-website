@@ -10,7 +10,4 @@ export class UpdateReviewInput {
 
   @Field(() => Int, { nullable: true, description: 'id фильма' })
   movieId?: number;
-
-  @Field(() => Int, { description: 'id пользователя' })
-  userId: number;
 }
