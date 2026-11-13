@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, Render, Res, Sse, ParseIntPipe, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, Render, Res, Sse, ParseIntPipe, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, Query, } from '@nestjs/common';
 import type { MessageEvent } from '@nestjs/common';
 import type { Observable } from 'rxjs';
 import { MoviesService } from './movies.service';
@@ -8,12 +8,13 @@ import { AuthService } from '../auth/auth.service';
 import type { Request, Response } from 'express';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 
 @ApiExcludeController()
 @Controller('movies')
 export class MoviesController {
-  constructor(private readonly moviesService: MoviesService, private readonly authService: AuthService,private readonly storageService: StorageService,) {}
+  constructor(private readonly moviesService: MoviesService, private readonly authService: AuthService,private readonly storageService: StorageService, private readonly prisma: PrismaService,) {}
   @Sse('events')
   events(): Observable<MessageEvent> {
     return this.moviesService.getEvents();
@@ -21,15 +22,17 @@ export class MoviesController {
 
   @Get()
   @Render('movies')
-  async getMoviesPage(@Req() req: Request) {
+  async getMoviesPage(@Req() req: Request, @Query('q') q = '', @Query('genre') genre = '') {
     const auth = await this.authService.getAuthData(req);
-    const movies = await this.moviesService.findAll();
+    const genreId = Number(genre);
+    const movies = await this.moviesService.findAll(q.trim(), Number.isInteger(genreId) && genreId > 0 ? genreId : undefined);
+    const genres = (await this.moviesService.findGenres()).map(item => ({ ...item, selected: item.id === genreId }));
 
     const cards = movies.map((movie) => ({
       id: movie.id,
       title: movie.title,
       meta: `${movie.year}, ${movie.genre.name}, ${movie.duration} мин, ${movie.ageRating}`,
-      image: movie.posterUrl || '/img/placeholder.png',
+      image: movie.posterUrl || '/img/placeholder.svg',
       alt: movie.title,
     }));
 
@@ -37,6 +40,8 @@ export class MoviesController {
       ...auth,
       title: 'Каталог фильмов Kino',
       cards,
+      query: q,
+      genres,
     };
   }
 
@@ -90,11 +95,10 @@ export class MoviesController {
     const auth = await this.authService.getAuthData(req);
     const movie = await this.moviesService.findOne(id);
 
-    return {
-      ...auth,
-      title: movie.title,
-      movie,
-    };
+    if (auth.user) await this.prisma.movieView.create({ data: { userId: auth.user.id, movieId: id } });
+    const reviews = await this.prisma.review.findMany({ where: { movieId: id }, include: { user: { select: { name: true } } }, orderBy: { createdAt: 'desc' } });
+    const favorite = auth.user ? await this.prisma.favorite.findUnique({ where: { userId_movieId: { userId: auth.user.id, movieId: id } } }) : null;
+    return { ...auth, title: movie.title, movie, favorite, reviews: reviews.map(review => ({ ...review, canManage: review.userId === auth.user?.id })), ownReview: reviews.some(review => review.userId === auth.user?.id) };
   }
 
   @Get(':id/edit')

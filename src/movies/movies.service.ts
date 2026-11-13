@@ -27,8 +27,9 @@ export class MoviesService {
     });
   }
 
-  async findAll() {
+  async findAll(query = '', genreId?: number) {
     return this.prisma.movie.findMany({
+      where: { ...(query ? { title: { contains: query, mode: 'insensitive' } } : {}), ...(genreId ? { genreId } : {}) },
       include: { genre: true},
       orderBy: { id: 'asc' },
     });

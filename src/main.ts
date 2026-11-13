@@ -1,4 +1,5 @@
 import { ValidationPipe } from '@nestjs/common';
+import type { Request, Response, NextFunction } from 'express';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { join } from 'path';
@@ -19,6 +20,14 @@ async function bootstrap() {
     allowedHeaders: ['content-type', ...SuperTokens.getAllCORSHeaders()],
     credentials: true,
   });
+  // Browser form submissions with an Origin must originate from this site.
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method) || !req.headers.origin) return next();
+    const configured = process.env.SUPERTOKENS_WEBSITE_DOMAIN;
+    const expected = configured || `${req.protocol}://${req.get('host')}`;
+    if (req.headers.origin !== expected.replace(/\/$/, '')) return res.status(403).send('Недопустимый источник запроса');
+    return next();
+  });
   app.useGlobalFilters(new ApiExceptionFilter());
   app.useGlobalPipes(new ValidationPipe({}));
   app.useGlobalInterceptors(new ElapsedTimeInterceptor(), new PublicCacheInterceptor());
@@ -31,7 +40,7 @@ async function bootstrap() {
   });
   const config = new DocumentBuilder()
     .setTitle('Kino API')
-    .setDescription('REST API для онлайн-кинотеатра Kino')
+    .setDescription('REST API каталога фильмов КИНО')
     .addCookieAuth('sAccessToken', {
       type: 'apiKey',
       in: 'cookie',

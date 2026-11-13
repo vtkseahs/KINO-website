@@ -1,12 +1,28 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
-import { ConflictException, ForbiddenException, Injectable, NotFoundException, } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client.js';
 
 @Injectable()
 export class ReviewsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async findDiscussionMovies() {
+    return this.prisma.movie.findMany({
+      include: { genre: true, _count: { select: { reviews: true, discussionPosts: true } } },
+      orderBy: { title: 'asc' },
+    });
+  }
+
+  async findMovieDiscussion(movieId: number) {
+    const movie = await this.prisma.movie.findUnique({
+      where: { id: movieId },
+      include: { genre: true, reviews: { include: { user: { select: { name: true } } }, orderBy: { createdAt: 'desc' } } },
+    });
+    if (!movie) throw new NotFoundException('Фильм не найден');
+    return movie;
+  }
 
   async findAll() {
     return this.prisma.review.findMany({
@@ -64,7 +80,14 @@ export class ReviewsService {
     });
   }
 
+  private validateReview(rating: unknown, comment: unknown) {
+    if (rating !== undefined && (!Number.isInteger(Number(rating)) || Number(rating) < 1 || Number(rating) > 10)) throw new BadRequestException('Оценка должна быть целым числом от 1 до 10');
+    if (comment !== undefined && (typeof comment !== 'string' || !comment.trim())) throw new BadRequestException('Введите текст отзыва');
+  }
+
   async createForUser(createReviewDto: CreateReviewDto, userId: number) {
+    if (createReviewDto.rating == null || createReviewDto.comment == null) throw new BadRequestException('Введите оценку и отзыв');
+    this.validateReview(createReviewDto.rating, createReviewDto.comment);
     try {
       return await this.prisma.review.create({
         data: {
@@ -98,6 +121,7 @@ export class ReviewsService {
   }
 
   async update(id: number, updateReviewDto: UpdateReviewDto, userId: number) {
+    this.validateReview(updateReviewDto.rating, updateReviewDto.comment);
     await this.findOwnedByUser(id, userId);
     try {
       return await this.prisma.review.update({

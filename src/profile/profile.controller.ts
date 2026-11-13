@@ -13,7 +13,7 @@ export class ProfileController {
   @Get()
   async getProfilePage(@Req() req: Request, @Res() res: Response) {
     const auth = await this.authService.getAuthData(req);
-    if (!auth || !auth.user) return;
+    if (!auth.user) return res.redirect('/auth/login');
 
     const profile = await this.profileService.getCurrentProfile(auth.user.id);
 
@@ -21,13 +21,14 @@ export class ProfileController {
       ...auth,
       title: 'Профиль Kino',
       profile,
+      plusActive: profile.subscriptionPlan?.title === 'КИНО Plus' && !!profile.subscriptionEndsAt && profile.subscriptionEndsAt > new Date(),
     });
   }
 
   @Get('edit')
   async getEditProfilePage(@Req() req: Request, @Res() res: Response) {
     const auth = await this.authService.getAuthData(req);
-    if (!auth || !auth.user) return;
+    if (!auth.user) return res.redirect('/auth/login');
 
     const profile = await this.profileService.getCurrentProfile(auth.user.id);
 

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>{{> head}}</head>
+<body>
+{{> header}}
+<main class="content">
+  <section class="discussion-page">
+    <p><a href="/reviews">← Все обсуждения</a></p>
+    <header class="discussion-hero">
+      <img src="{{#if movie.posterUrl}}{{movie.posterUrl}}{{else}}/img/placeholder.svg{{/if}}" alt="Постер фильма {{movie.title}}">
+      <div>
+        <p class="discussion-meta">{{movie.year}} · {{movie.genre.name}}</p>
+        <h2>Обсуждение фильма «{{movie.title}}»</h2>
+        <p>{{movie.description}}</p>
+        <a href="/movies/{{movie.id}}">Открыть карточку фильма →</a>
+      </div>
+    </header>
+    <section class="community-section" id="discussion">
+      <div class="discussion-section-heading"><div><p class="community-eyebrow">СООБЩЕСТВО ФИЛЬМА</p><h2>Обсуждение</h2></div><span>Сообщений: {{postCount}}</span></div>
+      <p class="community-intro">Делитесь впечатлениями, задавайте вопросы и отвечайте другим зрителям.</p>
+      {{#if isAuth}}
+        <form action="/reviews/movie/{{movie.id}}/posts" method="post" class="community-compose"><label for="new-post">Начать разговор</label><textarea id="new-post" name="content" maxlength="5000" required placeholder="Что вы думаете об этом фильме?"></textarea><div class="community-compose-footer"><span>До 5000 символов</span><button class="button" type="submit">Опубликовать</button></div></form>
+      {{else}}<p class="discussion-empty"><a href="/auth/login">Войдите</a>, чтобы написать сообщение, ответить или поставить лайк.</p>{{/if}}
+      <div class="community-threads">
+        {{#each threads}}
+          <div class="community-thread">{{> discussion_post}}<div class="community-replies">{{#each replies}}{{> discussion_post}}{{/each}}</div></div>
+        {{else}}<div class="discussion-empty"><strong>Здесь пока тихо</strong><p>Начните обсуждение этого фильма первым.</p></div>{{/each}}
+      </div>
+    </section>
+    <section class="community-reviews-section"><div class="discussion-section-heading"><h2>Оценки и отзывы</h2><span>Всего: {{reviews.length}}</span></div>
+      <div class="discussion-reviews">
+        {{#each reviews}}<article class="discussion-review"><div class="discussion-review-heading"><h3>{{user.name}}</h3><span class="discussion-rating">{{rating}} / 10</span></div><p class="discussion-review-text">{{comment}}</p>{{#if canManage}}<div class="movie-actions"><a href="/reviews/{{id}}/edit" class="button button--secondary">Редактировать</a><form action="/reviews/{{id}}/delete" method="POST" onsubmit="return confirm('Удалить отзыв?')"><button class="button button--secondary" type="submit">Удалить</button></form></div>{{/if}}</article>{{else}}<p>Оценок пока нет.</p>{{/each}}
+      </div>
+      {{#if isAuth}}{{#unless ownReview}}<details class="community-review-form"><summary>Оставить оценку и отзыв</summary><form action="/reviews/add" method="POST" class="entity-form"><input type="hidden" name="movieId" value="{{movie.id}}"><div class="form-field"><label for="discussion-rating">Оценка от 1 до 10</label><input id="discussion-rating" name="rating" type="number" min="1" max="10" step="1" required></div><div class="form-field"><label for="discussion-comment">Ваш отзыв</label><textarea id="discussion-comment" name="comment" required></textarea></div><button class="button" type="submit">Опубликовать отзыв</button></form></details>{{/unless}}{{/if}}
+    </section>
+  </section>
+</main>
+{{> footer}}{{> scripts}}
+</body>
+</html>

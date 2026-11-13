@@ -1,0 +1,14 @@
+<article class="community-post{{#if replyTo}} community-reply{{/if}}" id="post-{{id}}">
+  <div class="community-avatar" aria-hidden="true">{{initial}}</div>
+  <div class="community-post-main">
+    <div class="community-post-heading"><strong>{{user.name}}</strong><time>{{dateLabel}}</time></div>
+    {{#if replyTo}}<p class="community-reply-to">В ответ {{replyTo}}</p>{{/if}}
+    <p class="community-post-text">{{content}}</p>
+    <div class="community-post-actions">
+      {{#if @root.isAuth}}
+        <form action="/reviews/movie/{{@root.movie.id}}/posts/{{id}}/like" method="post"><button class="community-like{{#if liked}} is-liked{{/if}}" type="submit" aria-pressed="{{#if liked}}true{{else}}false{{/if}}" aria-label="{{#if liked}}Убрать отметку нравится{{else}}Нравится{{/if}}">♥ <span>{{likeCount}}</span></button></form>
+        <details class="community-reply-control"><summary>Ответить</summary><form action="/reviews/movie/{{@root.movie.id}}/posts" method="post" class="community-reply-form"><input type="hidden" name="parentId" value="{{id}}"><label for="reply-{{id}}">Ответ для {{user.name}}</label><textarea id="reply-{{id}}" name="content" maxlength="5000" required placeholder="Напишите ответ..."></textarea><button class="button" type="submit">Отправить ответ</button></form></details>
+      {{else}}<span class="community-like-count">♥ {{likeCount}}</span><a href="/auth/login">Войти, чтобы ответить</a>{{/if}}
+    </div>
+  </div>
+</article>

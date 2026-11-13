@@ -9,6 +9,12 @@ import { ApiExcludeController } from '@nestjs/swagger';
 export class AppController {
   constructor(private readonly authService: AuthService,private readonly moviesService: MoviesService,) {}
 
+  @Get('about')
+  @Render('about')
+  async getAboutPage(@Req() req: Request) {
+    return { ...(await this.authService.getAuthData(req)), title: 'О проекте КИНО' };
+  }
+
   @Get()
   @Render('index')
   async getIndexPage(@Req() req: Request) {
@@ -19,13 +25,13 @@ export class AppController {
       id: movie.id,
       title: movie.title,
       meta: `${movie.year}, ${movie.genre.name}, ${movie.duration} мин, ${movie.ageRating}`,
-      image: movie.posterUrl || '/img/placeholder.png',
+      image: movie.posterUrl || '/img/placeholder.svg',
       alt: movie.title,
     }));
 
     return {
       ...auth,
-      title: 'Онлайн кинотеатр Kino',
+      title: 'Каталог фильмов КИНО',
       cards: cards,
     };
   }

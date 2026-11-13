@@ -14,7 +14,7 @@ export class FavoritesController {
   @Get()
   async getFavoritesPage(@Req() req: Request, @Res() res: Response) {
     const auth = await this.authService.getAuthData(req);
-    if (!auth || !auth.user) return;
+    if (!auth.user) return res.redirect('/auth/login');
 
     const favorites = await this.favoritesService.findAll(auth.user.id);
 
@@ -23,6 +23,20 @@ export class FavoritesController {
       title: 'Избранное Kino',
       favorites,
     });
+  }
+
+  @Post('movie/:movieId/add')
+  async addMovie(@Req() req: Request, @Param('movieId', ParseIntPipe) movieId: number, @Res() res: Response) {
+    const user = await this.authService.requireUser(req);
+    await this.favoritesService.addMovie(user.id, movieId);
+    return res.redirect('/subscribe');
+  }
+
+  @Post('movie/:movieId')
+  async toggleMovie(@Req() req: Request, @Param('movieId', ParseIntPipe) movieId: number, @Res() res: Response) {
+    const user = await this.authService.requireUser(req);
+    await this.favoritesService.toggleMovie(user.id, movieId);
+    return res.redirect(`/movies/${movieId}`);
   }
 
   @Get('add')
@@ -61,7 +75,7 @@ export class FavoritesController {
     @Res() res: Response,
   ) {
     const auth = await this.authService.getAuthData(req);
-    if (!auth || !auth.user) return;
+    if (!auth.user) return res.redirect('/auth/login');
 
     const favorite = await this.favoritesService.findOne(id, auth.user.id);
 
@@ -79,7 +93,7 @@ export class FavoritesController {
     @Res() res: Response,
   ) {
     const auth = await this.authService.getAuthData(req);
-    if (!auth || !auth.user) return;
+    if (!auth.user) return res.redirect('/auth/login');
 
     const favorite = await this.favoritesService.findOne(id, auth.user.id);
     const movies = await this.favoritesService.findMovies();

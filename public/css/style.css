@@ -922,3 +922,74 @@ footer a:hover { color: var(--red); }
     margin: 0 auto;
 }
 
+
+/* Клавиатурная навигация и компактные экраны */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid #bd202b; outline-offset: 3px; }
+img { max-width: 100%; }
+@media (max-width: 700px) { .movie-card-full, .movie-actions, .movies-controls, .section-actions { flex-wrap: wrap; } .entity-form, .profile-card { max-width: 100%; } input, select, textarea { max-width: 100%; } }
+
+/* Обсуждения сгруппированы по фильмам */
+.discussion-catalog, .discussion-page { max-width: 1120px; margin: 0 auto; padding: 35px 0 70px; }
+.discussion-header { text-align: left; margin-bottom: 32px; }
+.discussion-header p, .discussion-meta, .discussion-count { color: #adb4c2; }
+.discussion-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.discussion-card { display: flex; overflow: hidden; min-width: 0; background: #151922; border: 1px solid #2a303c; border-radius: 12px; }
+.discussion-card-image { flex: 0 0 105px; }
+.discussion-card-image img { display: block; width: 100%; height: 100%; min-height: 180px; object-fit: cover; }
+.discussion-card-body { display: flex; flex-direction: column; align-items: flex-start; gap: 9px; padding: 18px; min-width: 0; }
+.discussion-card-body h3, .discussion-card-body p { margin: 0; }
+.discussion-card-body h3 a { color: inherit; text-decoration: none; }
+.discussion-card-body h3 a:hover { text-decoration: underline; }
+.discussion-card-body .button { margin-top: auto; font-size: 14px; }
+.discussion-hero { display: flex; align-items: center; gap: 28px; margin: 30px 0 45px; }
+.discussion-hero img { width: 150px; height: 220px; object-fit: cover; border-radius: 10px; flex-shrink: 0; }
+.discussion-hero h2 { margin: 8px 0 16px; }
+.discussion-section-heading, .discussion-review-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.discussion-section-heading span { color: #adb4c2; }
+.discussion-reviews { display: grid; gap: 14px; margin: 20px 0 35px; }
+.discussion-review, .discussion-empty { background: #151922; border: 1px solid #2a303c; border-radius: 12px; padding: 22px; }
+.discussion-review-heading h3 { margin: 0; }
+.discussion-rating { color: #f1c46b; font-weight: 700; white-space: nowrap; }
+.discussion-review-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.discussion-form-section { margin-top: 40px; }
+@media (max-width: 600px) { .discussion-grid { grid-template-columns: 1fr; } .discussion-hero { align-items: flex-start; gap: 18px; } .discussion-hero img { width: 95px; height: 145px; } .discussion-hero h2 { font-size: 22px; } }
+
+/* Название и назначение проекта */
+.brand { display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1; }
+.brand-name { font-size: 48px; font-weight: 700; letter-spacing: 5px; line-height: 1; }
+.brand-i { position: relative; }
+.brand-i::before { content: ""; position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--red-dark); top: -3px; left: 50%; transform: translateX(-70%); }
+.brand-tagline { color: #e94949; font-size: 14px; letter-spacing: .3px; margin-top: 8px; }
+.brand-description { color: var(--text-sec); font-size: 15px; line-height: 1.4; margin: 0 0 0 16px; }
+@media (max-width: 700px) { .brand-name { font-size: 36px; } .brand-tagline { font-size: 12px; } .brand-description { display: none; } }
+
+/* Сообщество фильма */
+.community-section { margin-top: 48px; }
+.community-eyebrow { color: #e45b5b; font-size: 12px; letter-spacing: .12em; font-weight: 700; margin: 0 0 4px; }
+.community-section .discussion-section-heading h2 { margin: 0; }
+.community-intro { color: var(--text-sec); margin: 12px 0 24px; }
+.community-compose { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+.community-compose label, .community-reply-form label { display: block; font-weight: 700; margin-bottom: 10px; }
+.community-compose textarea, .community-reply-form textarea { box-sizing: border-box; display: block; width: 100%; min-height: 110px; resize: vertical; padding: 14px; border: 1px solid #343b49; border-radius: 8px; color: var(--text); background: var(--bg); font-size: 15px; }
+.community-compose-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; }
+.community-compose-footer span, .community-post-heading time { color: var(--text-sec); font-size: 13px; }
+.community-threads { display: grid; gap: 16px; margin-top: 24px; }
+.community-thread { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+.community-post { display: flex; gap: 13px; min-width: 0; }
+.community-post-main { flex: 1; min-width: 0; }
+.community-avatar { flex: 0 0 40px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; background: #34303a; color: #f2c7c7; font-weight: 700; }
+.community-post-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; }
+.community-post-text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 10px 0 12px; }
+.community-post-actions { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 20px; color: var(--text-sec); font-size: 14px; }
+.community-post-actions form { margin: 0; }
+.community-like { padding: 0; border: 0; background: none; color: var(--text-sec); font-size: 15px; letter-spacing: 0; }
+.community-like.is-liked, .community-like:hover { color: #ff6666; }
+.community-reply-control { flex: 1; min-width: 150px; }
+.community-reply-control summary, .community-review-form summary { color: #f17a7a; cursor: pointer; }
+.community-reply-form { padding-top: 16px; }
+.community-reply-form textarea { min-height: 90px; margin-bottom: 12px; }
+.community-replies:not(:empty) { margin: 18px 0 0 53px; padding-left: 16px; border-left: 2px solid #343b49; display: grid; gap: 20px; }
+.community-reply-to { color: #e58b8b; font-size: 13px; margin: 3px 0 0; }
+.community-reviews-section { margin-top: 55px; padding-top: 25px; border-top: 1px solid var(--border); }
+.community-review-form form { margin-top: 15px; }
+@media (max-width: 600px) { .community-thread { padding: 15px; } .community-replies:not(:empty) { margin-left: 18px; padding-left: 12px; } .community-avatar { flex-basis: 34px; width: 34px; height: 34px; } }

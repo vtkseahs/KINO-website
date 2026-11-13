@@ -8,6 +8,16 @@ import { ConflictException, ForbiddenException, Injectable, NotFoundException } 
 export class FavoritesService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async addMovie(userId: number, movieId: number) {
+    return this.prisma.favorite.upsert({ where: { userId_movieId: { userId, movieId } }, create: { userId, movieId }, update: {} });
+  }
+
+  async toggleMovie(userId: number, movieId: number) {
+    const favorite = await this.prisma.favorite.findUnique({ where: { userId_movieId: { userId, movieId } } });
+    if (favorite) return this.prisma.favorite.delete({ where: { id: favorite.id } });
+    return this.prisma.favorite.upsert({ where: { userId_movieId: { userId, movieId } }, create: { userId, movieId }, update: {} });
+  }
+
   async findAll(userId: number) {
     return this.prisma.favorite.findMany({
       where: { userId },

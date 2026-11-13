@@ -18,7 +18,7 @@
       {{#each favorites}}
         <article class="movie-card">
           <div class="movie-poster">
-            <img src="{{this.movie.posterUrl}}" alt="{{this.movie.title}}">
+            <img src="{{#if this.movie.posterUrl}}{{this.movie.posterUrl}}{{else}}/img/placeholder.svg{{/if}}" alt="{{this.movie.title}}">
           </div>
 
           <div class="movie-info">
@@ -29,7 +29,7 @@
             </em>
 
             <div class="movie-actions">
-              <a href="/favorites/{{this.id}}" class="button">Открыть</a>
+              <a href="/movies/{{this.movie.id}}" class="button">Открыть фильм</a><form action="/favorites/{{this.id}}/delete" method="POST"><button class="button button--secondary" type="submit">Удалить</button></form>
             </div>
           </div>
         </article>

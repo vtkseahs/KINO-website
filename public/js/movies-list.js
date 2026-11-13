@@ -1,12 +1,10 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const moviesContainer = document.getElementById("movies-list");
-    if (!moviesContainer) return;
-
-    // настраиваем библиотеку List.js для каталога фильмов
-    const options = {
-        // берем элементы по тексту которых будет идти поиск и сортировка (название и описание)
-        valueNames: ["movie-title", "movie-meta"]
-    };
-    //инициализируем List.js на контейнере с айди movies-list
-    new List(moviesContainer, options);
+document.addEventListener('DOMContentLoaded', () => {
+  const container = document.getElementById('movies-list');
+  const button = container?.querySelector('.sort');
+  if (!button) return;
+  button.addEventListener('click', () => {
+    const list = container.querySelector('.best-movies');
+    if (!list) return;
+    [...list.children].sort((a, b) => (a.querySelector('.movie-title')?.textContent || '').localeCompare(b.querySelector('.movie-title')?.textContent || '', 'ru')).forEach(card => list.appendChild(card));
+  });
 });

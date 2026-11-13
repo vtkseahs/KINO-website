@@ -1,48 +1,33 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-  {{> head}}
-</head>
+<head>{{> head}}</head>
 <body>
 {{> header}}
-
-<main>
-  <section class="reviews-list-section">
-    <div class="page-header">
-      <h2>Отзывы пользователей</h2>
-    </div>
-
-    <div class="section-actions">
-      {{#if isAuth}}
-        <a href="/reviews/add" class="button">Добавить отзыв</a>
-      {{else}}
-        <a href="/auth/login" class="button">Войти, чтобы оставить отзыв</a>
-      {{/if}}
-    </div>
-
-    <div class="faq-list" style="margin-top: 20px;">
-      {{#each reviews}}
-        <article class="faq-item">
-          <h3>{{this.movie.title}}</h3>
-          <p><strong>Автор:</strong> {{this.user.name}}</p>
-          <p><strong>Оценка:</strong> {{this.rating}}/10</p>
-          <p><strong>Текст:</strong> {{this.comment}}</p>
-
-          <div class="movie-actions" style="margin-top: 12px;">
-            <a href="/reviews/{{this.id}}" class="button">Открыть</a>
-            {{#if this.canManage}}
-              <a href="/reviews/{{this.id}}/edit" class="button button--secondary">Редактировать</a>
-            {{/if}}
+<main class="content">
+  <section class="discussion-catalog">
+    <header class="page-header discussion-header">
+      <h2>Обсуждения фильмов</h2>
+      <p>Выберите фильм, чтобы общаться со зрителями, отвечать на сообщения и делиться мнением.</p>
+    </header>
+    <div class="discussion-grid">
+      {{#each movies}}
+        <article class="discussion-card">
+          <a class="discussion-card-image" href="/reviews/movie/{{id}}" tabindex="-1" aria-hidden="true">
+            <img src="{{#if posterUrl}}{{posterUrl}}{{else}}/img/placeholder.svg{{/if}}" alt="">
+          </a>
+          <div class="discussion-card-body">
+            <p class="discussion-meta">{{year}} · {{genre.name}}</p>
+            <h3><a href="/reviews/movie/{{id}}">{{title}}</a></h3>
+            <p class="discussion-count">Сообщений: {{_count.discussionPosts}} · Отзывов: {{_count.reviews}}</p>
+            <a class="button button--secondary" href="/reviews/movie/{{id}}">Открыть обсуждение</a>
           </div>
         </article>
       {{else}}
-        <p>Отзывов пока нет.</p>
+        <p>В каталоге пока нет фильмов.</p>
       {{/each}}
     </div>
   </section>
 </main>
-
-{{> footer}}
-{{> scripts}}
+{{> footer}}{{> scripts}}
 </body>
 </html>

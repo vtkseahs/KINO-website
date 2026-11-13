@@ -1,9 +1,10 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, } from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger, } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { Prisma } from '../../generated/prisma/client.js';
 
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(ApiExceptionFilter.name);
   catch(exception: unknown, host: ArgumentsHost) {
     if (host.getType<string>() === 'graphql') {
       throw exception;
@@ -39,6 +40,10 @@ export class ApiExceptionFilter implements ExceptionFilter {
         message = 'Связанная запись не найдена';
         error = 'Bad Request';
       }
+    }
+
+    if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
+      this.logger.error(`Ошибка при обработке ${request.method} ${request.path}`, exception instanceof Error ? exception.stack : String(exception));
     }
 
     if (isApiRequest) {

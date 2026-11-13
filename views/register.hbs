@@ -10,7 +10,7 @@
   <section class="movie-form-page">
     <div class="page-header auth-card">
       <h2>Регистрация в Kino</h2>
-      <p>Пройдите регистрацию, чтобы управлять фильмами, отзывами, избранным и подпиской.</p>
+      <p>Пройдите регистрацию, чтобы оставлять отзывы, сохранять фильмы и пользоваться КИНО Plus.</p>
     </div>
 
     {{#if errorMessage}}
@@ -48,6 +48,7 @@
           id="password"
           type="password"
           name="password"
+          minlength="8"
           placeholder="Введите пароль"
           required
         >

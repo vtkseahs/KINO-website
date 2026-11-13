@@ -27,7 +27,7 @@
         </div>
       </div>
 
-      {{#if profile.subscriptionPlan}}
+      {{#if plusActive}}
         <div class="profile-subscribe">
           <div class="profile-subscribe-header">
             <h4>{{profile.subscriptionPlan.title}}</h4>
@@ -35,21 +35,22 @@
           </div>
 
           <p>{{profile.subscriptionPlan.description}}</p>
-          <p><strong>Стоимость:</strong> {{profile.subscriptionPlan.price}} ₽ в месяц</p>
+          <p>Доступны персональные функции КИНО Plus.</p>
           <p><strong>Действует до:</strong> {{profile.subscriptionEndsAt}}</p>
         </div>
       {{else}}
         <div class="profile-subscribe">
           <div class="profile-subscribe-header">
-            <h4>Подписка не оформлена</h4>
+            <h4>КИНО Plus не активирован</h4>
           </div>
-          <p>Выберите подходящий тариф, чтобы получить доступ к подписке</p>
+          <p>Активируйте доступ к персональным функциям</p>
         </div>
       {{/if}}
 
       <div class="section-actions">
+        <form action="/profile/{{profile.id}}/delete" method="POST" onsubmit="return confirm('Удалить аккаунт и все связанные данные?')"><button class="button button--danger" type="submit">Удалить аккаунт</button></form>
         <a href="/profile/edit" class="button">Редактировать профиль</a>
-        <a href="/subscribe" class="button button--secondary">Перейти к подпискам</a>
+        <a href="/subscribe" class="button button--secondary">КИНО Plus</a>
       </div>
     </article>
   </section>
