@@ -1,7 +1,6 @@
 <nav class="user-menu">
   <ul>
     {{#if isAuth}}
-      <li><a href="/favorites">Избранное</a></li>
       <li><a href="/profile">Профиль: {{user.name}}</a></li>
       <li>
         <form action="/auth/logout" method="POST" style="display:inline;">

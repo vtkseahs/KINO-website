@@ -42,7 +42,16 @@ export class ApiExceptionFilter implements ExceptionFilter {
       }
     }
 
-    if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
+    const databaseCode = exception instanceof Prisma.PrismaClientKnownRequestError
+      ? exception.code
+      : exception instanceof Prisma.PrismaClientInitializationError ? exception.errorCode : undefined;
+    if (databaseCode === 'P1001' || databaseCode === 'P1002') {
+      status = HttpStatus.SERVICE_UNAVAILABLE;
+      message = 'Данные временно недоступны. Попробуйте обновить страницу позже.';
+      error = 'Service Unavailable';
+    }
+
+    if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
       this.logger.error(`Ошибка при обработке ${request.method} ${request.path}`, exception instanceof Error ? exception.stack : String(exception));
     }
 

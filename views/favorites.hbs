@@ -18,7 +18,7 @@
       {{#each favorites}}
         <article class="movie-card">
           <div class="movie-poster">
-            <img src="{{#if this.movie.posterUrl}}{{this.movie.posterUrl}}{{else}}/img/placeholder.svg{{/if}}" alt="{{this.movie.title}}">
+            <img src="{{moviePoster this.movie.posterUrl this.movie.title this.movie.year}}" alt="{{this.movie.title}}">
           </div>
 
           <div class="movie-info">

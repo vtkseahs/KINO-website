@@ -26,10 +26,23 @@ export class FavoritesController {
   }
 
   @Post('movie/:movieId/add')
-  async addMovie(@Req() req: Request, @Param('movieId', ParseIntPipe) movieId: number, @Res() res: Response) {
+  async addMovie(
+    @Req() req: Request,
+    @Param('movieId', ParseIntPipe) movieId: number,
+    @Res() res: Response,
+    @Body('mood') mood?: string,
+    @Body('period') period?: string,
+    @Body('runtime') runtime?: string,
+    @Body('pick') pick?: string,
+  ) {
     const user = await this.authService.requireUser(req);
     await this.favoritesService.addMovie(user.id, movieId);
-    return res.redirect('/subscribe');
+    const query = new URLSearchParams();
+    if (typeof mood === 'string' && mood) query.set('mood', mood);
+    if (typeof period === 'string' && period) query.set('period', period);
+    if (typeof runtime === 'string' && runtime) query.set('runtime', runtime);
+    if (pick === '1') query.set('pick', pick);
+    return res.redirect(query.size ? `/subscribe?${query}` : '/subscribe');
   }
 
   @Post('movie/:movieId')

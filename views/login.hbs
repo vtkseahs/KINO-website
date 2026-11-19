@@ -20,6 +20,7 @@
     {{/if}}
 
     <form action="/auth/login" method="POST" class="entity-form auth-card">
+      {{#if returnToPlus}}<input type="hidden" name="next" value="plus">{{/if}}
       <div class="form-field">
         <label for="login">Логин</label>
         <input

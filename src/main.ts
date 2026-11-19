@@ -1,3 +1,4 @@
+import { moviePoster } from './movies/movie-poster';
 import { ValidationPipe } from '@nestjs/common';
 import type { Request, Response, NextFunction } from 'express';
 import { NestFactory } from '@nestjs/core';
@@ -35,6 +36,7 @@ async function bootstrap() {
   app.setBaseViewsDir(join(process.cwd(), 'views'));
   app.setViewEngine('hbs');
   hbs.registerPartials(join(process.cwd(), 'views', 'partials'));
+  hbs.registerHelper('moviePoster', moviePoster);
   hbs.registerHelper('ifEquals', function (a, b, options) {
     return a === b ? options.fn(this) : options.inverse(this);
   });

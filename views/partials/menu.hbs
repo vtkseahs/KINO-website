@@ -3,7 +3,7 @@
     <li><a href="/">Главная</a></li>
     <li><a href="/movies">Фильмы</a></li>
     <li><a href="/subscribe">КИНО Plus</a></li>
-    <li><a href="/favorites">Избранное</a></li>
+    {{#if isAuth}}<li><a href="/favorites">Избранное</a></li>{{/if}}
     <li><a href="/reviews">Обсуждения</a></li>
   </ul>
 </nav>

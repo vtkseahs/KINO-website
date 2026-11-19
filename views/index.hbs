@@ -6,30 +6,29 @@
 <body>
 {{> header}}
 
-<main>
-  <section class="recomended-movies">
-    <header class="recomended-movies-header">
-      <h2>Рекомендуем к просмотру</h2>
-      <p>Редакционная подборка фильмов для знакомства с каталогом</p>
-    </header>
-
-    <div class="best-movies">
-      {{#each cards}}
-        {{> card}}
-      {{/each}}
+<main class="feature-page">
+  <header class="feature-hero home-hero">
+    <div>
+      <h1>Что посмотрим?</h1>
+      <p>Найдите фильм на вечер, обсудите его со зрителями и соберите список того, что хочется посмотреть.</p>
+      <div class="feature-actions">
+        <a class="button" href="/movies">Выбрать фильм</a>
+        <a class="button button--secondary" href="/reviews">К обсуждениям</a>
+      </div>
     </div>
+  </header>
+
+  <section class="feature-section">
+    <h2>Рекомендуем к просмотру</h2>
+    <div class="best-movies">{{#each cards}}{{> card}}{{else}}<p>Фильмы скоро появятся в каталоге.</p>{{/each}}</div>
   </section>
 
-  <section class="news-section">
-    <div class="news-content">
-      <header class="news-header">
-        <h2>Новости</h2>
-        <p>Свежие новости и премьеры</p>
-      </header>
-
-      <div class="news"><article class="news-article"><h3>Премьеры и новости кино</h3><p>Следите за обновлениями каталога: новые фильмы появятся здесь после добавления редакцией.</p></article></div>
-    </div>
-  </section>
+  {{#if recent}}
+    <section class="feature-section">
+      <h2>Недавно в каталоге</h2>
+      <div class="best-movies">{{#each recent}}{{> card}}{{/each}}</div>
+    </section>
+  {{/if}}
 </main>
 
 {{> footer}}

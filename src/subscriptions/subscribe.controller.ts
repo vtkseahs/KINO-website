@@ -7,17 +7,7 @@ import { SubscriptionsService } from './subscriptions.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ApiExcludeController } from '@nestjs/swagger';
 
-type CurrentSubscription = {
-  plan: {
-    id: number;
-    title: string;
-    description: string;
-    price: number;
-    durationDays: number;
-    createdAt: Date;
-  } | null;
-  endsAt: Date | null;
-};
+import { buildRecommendations, moodOptions, runtimeOptions } from './recommendations';
 
 @ApiExcludeController()
 @Controller('subscribe')
@@ -25,45 +15,46 @@ export class SubscriptionsController {
   constructor(private readonly subscriptionsService: SubscriptionsService, private readonly authService: AuthService, private readonly prisma: PrismaService,) {}
 
   @Get()
-  async getSubscriptionsPage(@Req() req: Request, @Res() res: Response, @Query('period') period = '30', @Query('mood') mood = '', @Query('result') result = '') {
+  async getSubscriptionsPage(@Req() req: Request, @Res() res: Response, @Query('period') period = '30', @Query('mood') mood = '', @Query('result') result = '', @Query('runtime') runtime = '', @Query('pick') pick = '') {
     const auth = await this.authService.getAuthData(req);
-    let active = false;
-    let recommendations: any[] = [], collections: any[] = [], genres: any[] = [], ratings: any[] = [];
-    let viewCount = 0;
     const days = ['7', '30', '90', '365'].includes(period) ? Number(period) : 30;
-    const moods: Record<string, string[]> = { light: ['комедия', 'мультфильм', 'семейный'], exciting: ['боевик', 'приключения', 'триллер'], thoughtful: ['драма', 'фантастика', 'документальный'] };
-    if (auth.user) {
-      const subscription = await this.subscriptionsService.getCurrentUserSubscription(auth.user.id);
-      active = subscription.plan?.title === 'КИНО Plus' && !!subscription.endsAt && subscription.endsAt > new Date();
-      if (active) {
-        const since = new Date(Date.now() - days * 86400000);
-        const [favorites, reviews, views, movies] = await Promise.all([
-          this.prisma.favorite.findMany({ where: { userId: auth.user.id }, include: { movie: { include: { genre: true } } } }),
-          this.prisma.review.findMany({ where: { userId: auth.user.id }, include: { movie: { include: { genre: true } } } }),
-          this.prisma.movieView.findMany({ where: { userId: auth.user.id }, include: { movie: { include: { genre: true } } } }),
-          this.prisma.movie.findMany({ include: { genre: true }, orderBy: { id: 'asc' } }),
-        ]);
-        const weights = new Map<number, number>();
-        const known = new Set<number>();
-        for (const item of favorites) { weights.set(item.movie.genreId, (weights.get(item.movie.genreId) || 0) + 3); known.add(item.movieId); }
-        for (const item of reviews) { weights.set(item.movie.genreId, (weights.get(item.movie.genreId) || 0) + Math.max(0, item.rating - 5)); known.add(item.movieId); }
-        for (const item of views) { weights.set(item.movie.genreId, (weights.get(item.movie.genreId) || 0) + 1); known.add(item.movieId); }
-        const ranked = [...movies].sort ( (a, b) => (weights.get(b.genreId) || 0) - (weights.get(a.genreId) || 0));
-        recommendations = ranked.filter(movie => !known.has(movie.id)).slice(0, 8);
-        if (mood && moods[mood]) recommendations = ranked.filter(movie => moods[mood].some(g => movie.genre.name.toLowerCase().includes(g))).slice(0, 8);
-        const topGenreIds = [...weights.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([id]) => id);
-        collections = topGenreIds.map(id => ({ name: movies.find(m => m.genreId === id)?.genre.name, movies: ranked.filter(m => m.genreId === id).slice(0, 6) }));
-        const periodViews = views.filter(v => v.viewedAt >= since);
-        viewCount = periodViews.length;
-        const genreCounts = new Map<string, number>();
-        for (const item of periodViews) genreCounts.set(item.movie.genre.name, (genreCounts.get(item.movie.genre.name) || 0) + 1);
-        genres = [...genreCounts].map(([name, count]) => ({ name, count }));
-        const ratingCounts = new Map<number, number>();
-        for (const item of reviews.filter(r => r.createdAt >= since)) ratingCounts.set(item.rating, (ratingCounts.get(item.rating) || 0) + 1);
-        ratings = [...ratingCounts].sort((a, b) => b[0] - a[0]).map(([rating, count]) => ({ rating, count }));
-      }
+    const base = { ...auth, title: 'КИНО Plus', failed: result === 'failed' };
+    if (!auth.user) return res.render('subscribe', base);
+
+    const userId = auth.user.id;
+    const subscription = await this.subscriptionsService.getCurrentUserSubscription(userId);
+    const active = subscription.plan?.title === 'КИНО Plus'
+      && subscription.endsAt && subscription.endsAt > new Date();
+    if (!active) return res.render('subscribe', base);
+
+    const since = new Date(Date.now() - days * 86400000);
+    const interaction = { movie: { include: { genre: true } } } as const;
+    const [favorites, reviews, views, movies] = await Promise.all([
+      this.prisma.favorite.findMany({ where: { userId }, include: interaction }),
+      this.prisma.review.findMany({ where: { userId }, include: interaction }),
+      this.prisma.movieView.findMany({ where: { userId }, include: interaction }),
+      this.prisma.movie.findMany({ include: { genre: true, _count: { select: { reviews: true } } } }),
+    ]);
+    const plus = buildRecommendations(movies, favorites, reviews, views, mood, runtime, pick === '1');
+    const periodViews = views.filter(view => view.viewedAt >= since);
+    const genreCounts = new Map<string, { name: string; count: number }>();
+    for (const { movie } of periodViews) {
+      const name = movie.genre.name.trim();
+      const key = name.toLocaleLowerCase('ru-RU');
+      genreCounts.set(key, { name, count: (genreCounts.get(key)?.count ?? 0) + 1 });
     }
-    return res.render('subscribe', { ...auth, title: 'КИНО Plus', active, recommendations, collections, genres, ratings, viewCount, period: days, mood, result, failed: result === 'failed', activated: result === 'success' });
+    const ratingCounts = new Map<number, number>();
+    for (const { rating, createdAt } of reviews) {
+      if (createdAt >= since) ratingCounts.set(rating, (ratingCounts.get(rating) ?? 0) + 1);
+    }
+
+    return res.render('subscribe', {
+      ...base, ...plus, active: true, activated: result === 'success', period: days, moodOptions, runtimeOptions,
+      viewCount: periodViews.length,
+      uniqueViewCount: new Set(periodViews.map(view => view.movieId)).size,
+      genres: [...genreCounts.values()].sort((a, b) => b.count - a.count),
+      ratings: [...ratingCounts.entries()].sort(([a], [b]) => b - a).map(([rating, count]) => ({ rating, count })),
+    });
   }
 
   @Post('activate')

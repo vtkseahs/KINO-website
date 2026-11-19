@@ -15,18 +15,20 @@ export class AuthController {
   async getLoginPage(
     @Req() req: Request,
     @Query('error') error?: string,
+    @Query('next') next?: string,
   ) {
     const auth = await this.authService.getAuthData(req);
 
     return {
       title: 'Вход в Kino',
+      returnToPlus: next === 'plus',
       ...auth,
       errorMessage: error === '1' ? 'Неверный логин или пароль' : null,
     };
   }
 
   @Post('login')
-  async login(@Req() req: Request, @Body() loginDto: LoginDto, @Res() res: Response) {
+  async login(@Req() req: Request, @Body() loginDto: LoginDto, @Res() res: Response, @Body('next') next?: string) {
     const user = await this.authService.login(
       loginDto.login,
       loginDto.password,
@@ -35,10 +37,10 @@ export class AuthController {
     );
 
     if (!user) {
-      return res.redirect('/auth/login?error=1');
+      return res.redirect(next === 'plus' ? '/auth/login?error=1&next=plus' : '/auth/login?error=1');
     }
 
-    return res.redirect('/');
+    return res.redirect(next === 'plus' ? '/subscribe' : '/');
   }
 
   @Post('logout')

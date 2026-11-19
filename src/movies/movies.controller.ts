@@ -1,3 +1,4 @@
+import { moviePoster } from './movie-poster';
 import { Body, Controller, Get, Param, Post, Req, Render, Res, Sse, ParseIntPipe, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, Query, } from '@nestjs/common';
 import type { MessageEvent } from '@nestjs/common';
 import type { Observable } from 'rxjs';
@@ -32,7 +33,7 @@ export class MoviesController {
       id: movie.id,
       title: movie.title,
       meta: `${movie.year}, ${movie.genre.name}, ${movie.duration} мин, ${movie.ageRating}`,
-      image: movie.posterUrl || '/img/placeholder.svg',
+      image: moviePoster(movie.posterUrl, movie.title, movie.year),
       alt: movie.title,
     }));
 

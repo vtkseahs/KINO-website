@@ -7,7 +7,7 @@
   <section class="discussion-page">
     <p><a href="/reviews">← Все обсуждения</a></p>
     <header class="discussion-hero">
-      <img src="{{#if movie.posterUrl}}{{movie.posterUrl}}{{else}}/img/placeholder.svg{{/if}}" alt="Постер фильма {{movie.title}}">
+      <img src="{{moviePoster movie.posterUrl movie.title movie.year}}" alt="Постер фильма {{movie.title}}">
       <div>
         <p class="discussion-meta">{{movie.year}} · {{movie.genre.name}}</p>
         <h2>Обсуждение фильма «{{movie.title}}»</h2>

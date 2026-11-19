@@ -1,9 +1,135 @@
-<!DOCTYPE html><html lang="ru"><head>{{> head}}</head><body>{{> header}}
-<main class="content"><header class="page-header"><h2>КИНО Plus</h2><p>Персональные рекомендации, подбор по настроению и статистика ваших взаимодействий с каталогом.</p></header>
-{{#if failed}}<p role="alert">Тестовая активация не удалась. Статус доступа не изменился.</p>{{/if}}{{#if activated}}<p role="status">КИНО Plus активирован.</p>{{/if}}
-{{#if active}}
-<section class="profile-section"><h2>Рекомендации для вас</h2><p>Учитываем избранное, оценки и открытые карточки. Если данных мало, покажем фильмы из каталога.</p><form action="/subscribe" method="get"><label for="mood">Настроение</label><select name="mood" id="mood"><option value="">Все рекомендации</option><option value="light" {{#ifEquals mood 'light'}}selected{{/ifEquals}}>Хочется лёгкого</option><option value="exciting" {{#ifEquals mood 'exciting'}}selected{{/ifEquals}}>Хочется приключений</option><option value="thoughtful" {{#ifEquals mood 'thoughtful'}}selected{{/ifEquals}}>Хочется задуматься</option></select><button class="button" type="submit">Подобрать</button></form><div class="best-movies">{{#each recommendations}}<article class="movie-card"><div class="movie-poster"><img src="{{#if posterUrl}}{{posterUrl}}{{else}}/img/placeholder.svg{{/if}}" alt="{{title}}"></div><div class="movie-info"><h3>{{title}}</h3><p>{{genre.name}} · {{year}}</p><a class="button" href="/movies/{{id}}">Открыть</a><form action="/favorites/movie/{{id}}/add" method="post"><button class="button button--secondary" type="submit">Добавить в избранное</button></form></div></article>{{else}}<p>Подходящих фильмов пока нет. Попробуйте другое настроение или изучите каталог.</p>{{/each}}</div></section>
-<section class="profile-section"><h2>Ваша статистика</h2><form action="/subscribe" method="get"><label for="period">Период</label><select id="period" name="period"><option value="7" {{#ifEquals period 7}}selected{{/ifEquals}}>7 дней</option><option value="30" {{#ifEquals period 30}}selected{{/ifEquals}}>30 дней</option><option value="90" {{#ifEquals period 90}}selected{{/ifEquals}}>90 дней</option><option value="365" {{#ifEquals period 365}}selected{{/ifEquals}}>Год</option></select><button class="button" type="submit">Показать</button></form><p>Открытий карточек: {{viewCount}}</p><h3>Жанры открытых фильмов</h3><ul>{{#each genres}}<li>{{name}}: {{count}}</li>{{else}}<li>Пока нет просмотров за этот период.</li>{{/each}}</ul><h3>Ваши оценки</h3><ul>{{#each ratings}}<li>{{rating}}/10: {{count}}</li>{{else}}<li>Пока нет оценок за этот период.</li>{{/each}}</ul></section>
-<section class="profile-section"><h2>Ваши подборки по жанрам</h2>{{#each collections}}<h3>{{name}}</h3><ul>{{#each movies}}<li><a href="/movies/{{id}}">{{title}}</a><form action="/favorites/movie/{{id}}/add" method="post"><button type="submit" class="button button--secondary">Добавить в избранное</button></form></li>{{/each}}</ul>{{else}}<p>Откройте карточки фильмов, оставьте оценки или добавьте фильмы в избранное, чтобы получить подборки.</p>{{/each}}</section><form action="/subscribe/cancel" method="post"><button class="button button--secondary" type="submit">Отключить Plus</button></form>
-{{else}}<section class="profile-card"><h2>Попробуйте персональные функции</h2><p>Активируйте КИНО Plus и находите фильмы, которые подходят именно вам.</p>{{#if isAuth}}<form action="/subscribe/activate" method="post"><button class="button" type="submit" name="result" value="success">Активировать КИНО Plus</button><button class="button button--secondary" type="submit" name="result" value="failed">Показать ошибку активации</button></form>{{else}}<a class="button" href="/auth/login">Войти для активации</a>{{/if}}</section>{{/if}}
-</main>{{> footer}}{{> scripts}}</body></html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>{{> head}}</head>
+<body>
+{{> header}}
+<main class="content feature-page">
+  <header class="feature-hero plus-hero">
+    <div class="plus-hero-copy">
+      <p class="feature-label">КИНО <span>PLUS</span>{{#if active}} · Доступ активен{{/if}}</p>
+      <h1>Ваш следующий<br>любимый фильм</h1>
+      <p>Подбор по настроению и времени, персональные рекомендации и история ваших открытий.</p>
+      {{#if active}}
+        <a class="button" href="#mood-section">Подобрать фильм</a>
+      {{else}}
+        {{#if isAuth}}
+          <form class="feature-actions" action="/subscribe/activate" method="post">
+            <button class="button" type="submit" name="result" value="success">Активировать КИНО Plus</button>
+            <details class="plus-demo"><summary>Сценарий ошибки</summary><button class="button button--secondary" type="submit" name="result" value="failed">Проверить ошибку активации</button></details>
+          </form>
+        {{else}}
+          <a class="button" href="/auth/login?next=plus">Войти для активации</a>
+        {{/if}}
+      {{/if}}
+    </div>
+    <div class="plus-hero-art" aria-hidden="true">
+      <img src="/img/movies_and_series/shrek.png" alt="">
+      <img src="/img/movies_and_series/inerstellar.png" alt="">
+      <img src="/img/movies_and_series/1plus1.png" alt="">
+    </div>
+  </header>
+
+  {{#if failed}}<p class="feature-notice" role="alert">Активация не удалась. Статус доступа не изменился.</p>{{/if}}
+  {{#if activated}}<p class="feature-notice" role="status">КИНО Plus активирован.</p>{{/if}}
+
+  {{#if active}}
+    <section class="feature-section plus-picker" id="mood-section">
+      <h2>Что посмотреть сегодня?</h2>
+      <form class="plus-picker-form" action="/subscribe#mood-section" method="get">
+        <input type="hidden" name="pick" value="1">
+        <input type="hidden" name="period" value="{{period}}">
+        <div><label for="mood">Настроение</label>
+          <select name="mood" id="mood">
+            <option value="">Любое настроение</option>
+            {{#each moodOptions}}<option value="{{value}}" {{#ifEquals value ../mood}}selected{{/ifEquals}}>{{label}}</option>{{/each}}
+          </select>
+        </div>
+        <div><label for="runtime">Время на фильм</label>
+          <select name="runtime" id="runtime">
+            <option value="">Без ограничения</option>
+            {{#each runtimeOptions}}<option value="{{value}}" {{#ifEquals value ../runtime}}selected{{/ifEquals}}>{{label}}</option>{{/each}}
+          </select>
+        </div>
+        <button class="button" type="submit">Подобрать</button>
+      </form>
+      {{#if pickerUsed}}
+        {{#if moodResults}}
+          <div class="plus-picker-results">
+            {{#each moodResults}}
+              {{#if @first}}
+                <div class="plus-top-pick">
+                  <p class="plus-pick-label">Лучший вариант {{#if @root.selectedMoodLabel}}· {{@root.selectedMoodLabel}}{{/if}}</p>
+                  {{> plus_movie}}
+                  <p class="feature-meta">{{description}}</p>
+                </div>
+              {{/if}}
+            {{/each}}
+            {{#if moodResults.[1]}}
+              <div><h3>Ещё варианты</h3><div class="plus-grid">
+                {{#each moodResults}}{{#unless @first}}{{> plus_movie}}{{/unless}}{{/each}}
+              </div></div>
+            {{/if}}
+          </div>
+        {{else}}
+          <p class="feature-notice" role="status">Среди фильмов, которые вы ещё не оценили и не сохранили, подходящих вариантов нет. Попробуйте другое настроение или увеличьте время.</p>
+        {{/if}}
+      {{else}}
+        <p class="feature-meta">Укажите настроение или время, если хотите сузить выбор.</p>
+      {{/if}}
+    </section>
+
+    <section class="feature-section" aria-labelledby="recommendations-title">
+      <h2 id="recommendations-title">Фильмы для вас</h2>
+      {{#if hasPositiveSignals}}<p class="feature-meta">Подборка учитывает избранное, оценки и открытые карточки.</p>
+      {{else}}<p class="feature-meta">Пока показываем фильмы из каталога. Добавьте любимый фильм или поставьте оценку, чтобы уточнить подборку.</p>{{/if}}
+      <div class="plus-grid">
+        {{#each recommendations}}{{> plus_movie}}{{else}}<p>Вы уже оценили или сохранили все фильмы каталога.</p>{{/each}}
+      </div>
+    </section>
+
+    <section class="feature-section" id="stats">
+      <h2>Ваша активность</h2>
+      <form class="feature-actions feature-filter" action="/subscribe#stats" method="get">
+        {{#if pickerUsed}}<input type="hidden" name="pick" value="1">{{/if}}
+        <input type="hidden" name="mood" value="{{mood}}">
+        <input type="hidden" name="runtime" value="{{runtime}}">
+        <label for="period">Период</label>
+        <select id="period" name="period">
+          <option value="7" {{#ifEquals period 7}}selected{{/ifEquals}}>7 дней</option>
+          <option value="30" {{#ifEquals period 30}}selected{{/ifEquals}}>30 дней</option>
+          <option value="90" {{#ifEquals period 90}}selected{{/ifEquals}}>90 дней</option>
+          <option value="365" {{#ifEquals period 365}}selected{{/ifEquals}}>Год</option>
+        </select>
+        <button class="button button--secondary" type="submit">Показать</button>
+      </form>
+      <div class="feature-metrics">
+        <p><strong>{{viewCount}}</strong> Открытий карточек</p>
+        <p><strong>{{uniqueViewCount}}</strong> Разных фильмов</p>
+      </div>
+      <div class="feature-columns">
+        <div><h3>Жанры открытых фильмов</h3><ul>{{#each genres}}<li>{{name}} <strong>{{count}}</strong></li>{{else}}<li>Карточки за этот период ещё не открывались.</li>{{/each}}</ul></div>
+        <div><h3>Ваши оценки</h3><ul>{{#each ratings}}<li>{{rating}}/10 <strong>{{count}}</strong></li>{{else}}<li>Оценок за этот период пока нет.</li>{{/each}}</ul></div>
+      </div>
+    </section>
+
+    <section class="feature-section">
+      <h2>Подборки по вашим жанрам</h2>
+      {{#each collections}}
+        <h3>{{name}}</h3><div class="plus-grid">{{#each movies}}{{> plus_movie}}{{/each}}</div>
+      {{else}}<p class="feature-meta">Подборки появятся, когда среди ваших интересов найдутся фильмы, которые вы ещё не сохранили и не оценили.</p>{{/each}}
+    </section>
+    <form class="feature-actions" action="/subscribe/cancel" method="post">
+      <button class="button button--secondary" type="submit">Отключить Plus</button>
+    </form>
+  {{else}}
+    <div class="feature-columns plus-benefits">
+      <section><h2>Фильмы для вас</h2><p>Подборки по вашей истории, избранному и оценкам.</p></section>
+      <section><h2>Кино под настроение</h2><p>Лёгкий фильм, приключение или история, над которой хочется задуматься.</p></section>
+      <section><h2>Ваша активность</h2><p>Открытые карточки, любимые жанры и оценки за выбранный период.</p></section>
+    </div>
+  {{/if}}
+</main>
+{{> footer}}
+{{> scripts}}
+</body>
+</html>

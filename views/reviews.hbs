@@ -13,7 +13,7 @@
       {{#each movies}}
         <article class="discussion-card">
           <a class="discussion-card-image" href="/reviews/movie/{{id}}" tabindex="-1" aria-hidden="true">
-            <img src="{{#if posterUrl}}{{posterUrl}}{{else}}/img/placeholder.svg{{/if}}" alt="">
+            <img src="{{moviePoster posterUrl title year}}" alt="">
           </a>
           <div class="discussion-card-body">
             <p class="discussion-meta">{{year}} · {{genre.name}}</p>

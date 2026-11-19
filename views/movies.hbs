@@ -12,13 +12,6 @@
       <h2>Каталог фильмов Kino</h2>
       <p>Выбирайте на свой вкус</p>
 
-      <div class="movies-events">
-        <h3>События каталога</h3>
-        <ul id="movies-events-list">
-          <li>Ожидание обновлений...</li>
-        </ul>
-      </div>
-
       <div class="movies-controls">
         <form action="/movies" method="get"><label for="catalog-search">Поиск по названию</label> <input id="catalog-search" name="q" type="search" value="{{query}}" placeholder="Название фильма"><label for="genre">Жанр</label> <select id="genre" name="genre"><option value="">Все жанры</option>{{#each genres}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select> <button class="button" type="submit">Найти</button></form>
         <button class="button sort" data-sort="movie-title">
