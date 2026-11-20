@@ -157,7 +157,17 @@ export class AuthService {
           antiCsrfCheck: false,
           checkDatabase,
         });
-    } catch {
+    } catch (error) {
+      if (
+        req.method === 'GET' &&
+        !req.path.startsWith('/api/') &&
+        !req.path.startsWith('/auth/') &&
+        req.accepts('html') &&
+        Session.Error.isErrorFromSuperTokens(error) &&
+        error.type === Session.Error.TRY_REFRESH_TOKEN
+      ) {
+        throw error;
+      }
       return undefined;
     }
   }

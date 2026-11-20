@@ -5,8 +5,6 @@ import { map, Observable } from 'rxjs';
 
 @Injectable()
 export class PublicCacheInterceptor implements NestInterceptor {
-  private readonly maxAgeSeconds = 3600;
-
   private readonly cacheablePaths = [
     /^\/api\/movies(?:\/\d+)?$/,
     /^\/api\/movies\/\d+\/reviews$/,
@@ -33,7 +31,7 @@ export class PublicCacheInterceptor implements NestInterceptor {
         const payload = JSON.stringify(data);
         const etag = `"${createHash('sha1').update(payload).digest('hex')}"`;
 
-        response.setHeader('Cache-Control', `public, max-age=${this.maxAgeSeconds}, must-revalidate`,);
+        response.setHeader('Cache-Control', 'public, no-cache',);
         response.setHeader('ETag', etag);
 
         if (request.headers['if-none-match'] === etag) {

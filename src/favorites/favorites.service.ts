@@ -1,3 +1,4 @@
+import { pageOffset } from '../pagination/page-offset';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
@@ -9,13 +10,20 @@ export class FavoritesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async addMovie(userId: number, movieId: number) {
-    return this.prisma.favorite.upsert({ where: { userId_movieId: { userId, movieId } }, create: { userId, movieId }, update: {} });
+    await this.prisma.favorite.createMany({
+      data: { userId, movieId },
+      skipDuplicates: true,
+    });
+  }
+
+  async removeMovie(userId: number, movieId: number) {
+    await this.prisma.favorite.deleteMany({ where: { userId, movieId } });
   }
 
   async toggleMovie(userId: number, movieId: number) {
     const favorite = await this.prisma.favorite.findUnique({ where: { userId_movieId: { userId, movieId } } });
-    if (favorite) return this.prisma.favorite.delete({ where: { id: favorite.id } });
-    return this.prisma.favorite.upsert({ where: { userId_movieId: { userId, movieId } }, create: { userId, movieId }, update: {} });
+    if (favorite) return this.removeMovie(userId, movieId);
+    return this.addMovie(userId, movieId);
   }
 
   async findAll(userId: number) {
@@ -125,7 +133,7 @@ export class FavoritesService {
   }
 
   async findAllPaginated(userId: number, page: number, limit: number) {
-    const skip = (page-1)*limit;
+    const skip = pageOffset(page, limit);
 
     const [data, total] = await Promise.all([
       this.prisma.favorite.findMany({

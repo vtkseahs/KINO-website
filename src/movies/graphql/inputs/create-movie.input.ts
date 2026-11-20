@@ -17,8 +17,8 @@ export class CreateMovieInput {
   @Field({ description: 'Возрастной рейтинг' })
   ageRating: string;
 
-  @Field({ nullable: true, description: 'Ссылка на постер' })
-  posterUrl?: string;
+  @Field(() => String, { nullable: true, description: 'Ссылка на постер' })
+  posterUrl?: string | null;
 
   @Field(() => Int, { description: 'id жанра' })
   genreId: number;

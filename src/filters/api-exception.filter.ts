@@ -1,5 +1,6 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger, } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import Session from 'supertokens-node/recipe/session';
 import { Prisma } from '../../generated/prisma/client.js';
 
 @Catch()
@@ -12,6 +13,20 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
+
+    if (
+      Session.Error.isErrorFromSuperTokens(exception) &&
+      exception.type === Session.Error.TRY_REFRESH_TOKEN
+    ) {
+      const authPath = (process.env.SUPERTOKENS_API_BASE_PATH || '/auth').replace(/\/+$/, '');
+      return response
+        .set('Cache-Control', 'no-store')
+        .status(HttpStatus.UNAUTHORIZED)
+        .render('session-refresh', {
+          title: 'Восстановление входа',
+          refreshPath: authPath + '/session/refresh',
+        });
+    }
 
     const isApiRequest = request.url.startsWith('/api');
 

@@ -1,3 +1,4 @@
+import { pageOffset } from '../pagination/page-offset';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
@@ -175,7 +176,7 @@ export class ReviewsService {
   }
 
   async findAllPaginated(page: number, limit: number) {
-    const skip = (page-1)*limit;
+    const skip = pageOffset(page, limit);
 
     const [data, total] = await Promise.all([
       this.prisma.review.findMany({

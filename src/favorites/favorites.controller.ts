@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, Res,ParseIntPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Post, Req, Res,ParseIntPipe } from '@nestjs/common';
 import { FavoritesService } from './favorites.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
@@ -47,9 +47,26 @@ export class FavoritesController {
   }
 
   @Post('movie/:movieId')
-  async toggleMovie(@Req() req: Request, @Param('movieId', ParseIntPipe) movieId: number, @Res() res: Response) {
+  async setFavorite(
+    @Req() req: Request,
+    @Param('movieId', ParseIntPipe) movieId: number,
+    @Body('action') action: string | undefined,
+    @Res() res: Response,
+  ) {
     const user = await this.authService.requireUser(req);
-    await this.favoritesService.toggleMovie(user.id, movieId);
+    switch (action) {
+      case 'add':
+        await this.favoritesService.addMovie(user.id, movieId);
+        break;
+      case 'remove':
+        await this.favoritesService.removeMovie(user.id, movieId);
+        break;
+      case undefined:
+        await this.favoritesService.toggleMovie(user.id, movieId);
+        break;
+      default:
+        throw new BadRequestException('Некорректное действие с избранным');
+    }
     return res.redirect(`/movies/${movieId}`);
   }
 

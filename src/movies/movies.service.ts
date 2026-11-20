@@ -1,3 +1,4 @@
+import { pageOffset } from '../pagination/page-offset';
 import { movieMetadata } from './movie-metadata';
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import type { MessageEvent } from '@nestjs/common';
@@ -12,6 +13,7 @@ import type { Cache } from 'cache-manager';
 @Injectable()
 export class MoviesService {
   private readonly events$ = new Subject<MessageEvent>();
+  private catalogVersion = 0;
 
   constructor(private readonly prisma: PrismaService,
               @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,) {}
@@ -21,6 +23,7 @@ export class MoviesService {
   }
 
   private sendEvent(message: string) {
+    this.catalogVersion += 1;
     this.events$.next({
       data: {
         message,
@@ -98,7 +101,7 @@ export class MoviesService {
   }
 
   async update(id: number, updateMovieDto: UpdateMovieDto) {
-    const existingMovie = await this.findOne(id);
+    await this.findOne(id);
 
     const movie = await this.prisma.movie.update({
       where: { id },
@@ -119,11 +122,7 @@ export class MoviesService {
             ? Number(updateMovieDto.duration)
             : undefined,
         ageRating: updateMovieDto.ageRating !== undefined ? updateMovieDto.ageRating : undefined,
-        posterUrl:
-          updateMovieDto.posterUrl !== undefined &&
-          updateMovieDto.posterUrl !== ''
-            ? updateMovieDto.posterUrl
-            : existingMovie.posterUrl,
+        posterUrl: updateMovieDto.posterUrl === '' ? undefined : updateMovieDto.posterUrl,
         genreId:
           updateMovieDto.genreId !== undefined
             ? Number(updateMovieDto.genreId)
@@ -149,7 +148,8 @@ export class MoviesService {
   }
 
   async findAllPaginated(page: number, limit: number) {
-    const cacheKey = `movies:${page}:${limit}`;
+    const skip = pageOffset(page, limit);
+    const cacheKey = `movies:${this.catalogVersion}:${page}:${limit}`;
     const cached = await this.cacheManager.get<{
       page: number;
       limit: number;
@@ -159,8 +159,6 @@ export class MoviesService {
     if (cached) {
       return cached;
     }
-    const skip = (page-1) * limit;
-
     const [data, total] = await Promise.all([
       this.prisma.movie.findMany({
         include: { genre: true },
@@ -179,7 +177,7 @@ export class MoviesService {
   async findReviewsByMovie(movieId: number, page: number, limit: number) {
     await this.findOne(movieId);
 
-    const skip = (page-1)*limit;
+    const skip = pageOffset(page, limit);
 
     const [data, total] = await Promise.all([
       this.prisma.review.findMany({

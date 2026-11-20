@@ -36,7 +36,9 @@
         </form>
       {{/if}}
       {{#if isAuth}}
-        <form action="/favorites/movie/{{movie.id}}" method="POST"><button class="button" type="submit">{{#if favorite}}Убрать из избранного{{else}}В избранное{{/if}}</button></form>
+        <form action="/favorites/movie/{{movie.id}}" method="POST">
+          <button class="button" type="submit" name="action" value="{{#if favorite}}remove{{else}}add{{/if}}">{{#if favorite}}Убрать из избранного{{else}}В избранное{{/if}}</button>
+        </form>
       {{else}}<a class="button" href="/auth/login">Войдите, чтобы сохранить фильм</a>{{/if}}
       <a href="/movies" class="button button--danger">Назад к каталогу</a>
     </div>

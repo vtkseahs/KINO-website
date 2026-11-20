@@ -5,6 +5,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import SuperTokens from 'supertokens-node';
+import Session from 'supertokens-node/recipe/session';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/main';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -209,6 +210,115 @@ describe('Приёмочные сценарии КИНО', () => {
       .expect(200, /https:\/\/storage\.example\.test\/kino-e2e\/posters/);
   });
 
+  it('показывает актуальные фильмы после изменений и проверяет входные данные API', async () => {
+    const guest = request(app.getHttpServer());
+    const listPath = '/api/movies?limit=1';
+    const initial = await guest
+      .get(listPath)
+      .expect(200)
+      .expect('Cache-Control', 'public, no-cache');
+    await guest
+      .get(listPath)
+      .set('If-None-Match', initial.headers.etag)
+      .expect(304);
+    const created = await admin
+      .post('/api/movies')
+      .set('Origin', origin)
+      .send({
+        title: `Ранний фильм ${prefix}`,
+        description: 'Описание',
+        year: 1888,
+        duration: 5,
+        ageRating: '0+',
+        genreId,
+        posterUrl: 'https://example.test/poster.png',
+      })
+      .expect(201);
+    const id = created.body.id;
+
+    await guest
+      .get(listPath)
+      .set('If-None-Match', initial.headers.etag)
+      .expect(200)
+      .expect(({ body }) => expect(body.total).toBe(initial.body.total + 1));
+    await admin
+      .patch(`/api/movies/${id}`)
+      .set('Origin', origin)
+      .send({ year: 1889 })
+      .expect(200)
+      .expect(({ body }) =>
+        expect(body.posterUrl).toBe('https://example.test/poster.png'),
+      );
+    await admin
+      .patch(`/api/movies/${id}`)
+      .set('Origin', origin)
+      .send({ duration: null })
+      .expect(400);
+    await admin
+      .post(`/movies/${id}/edit`)
+      .set('Origin', origin)
+      .send({ actorNames: null })
+      .expect(400);
+
+    const badEdit = await admin
+      .post('/graphql')
+      .set('Origin', origin)
+      .send({
+        query:
+          'mutation ($id: Int!) { updateMovie(id: $id, input: { duration: 0 }) { id } }',
+        variables: { id },
+      })
+      .expect(200);
+    expect(badEdit.body.errors[0].extensions.code).toBe('BAD_REQUEST');
+
+    await admin
+      .patch(`/api/movies/${id}`)
+      .set('Origin', origin)
+      .send({ posterUrl: null })
+      .expect(200)
+      .expect(({ body }) => expect(body.posterUrl).toBeNull());
+    const latest = await guest.get(listPath).expect(200);
+    await admin.delete(`/api/movies/${id}`).set('Origin', origin).expect(204);
+    await guest
+      .get(listPath)
+      .set('If-None-Match', latest.headers.etag)
+      .expect(200)
+      .expect(({ body }) => expect(body.total).toBe(initial.body.total));
+
+    for (const [query, message] of [
+      [
+        '{ movies(pagination: { page: 0 }) { total } }',
+        'Некорректный номер страницы',
+      ],
+      [
+        '{ reviews(pagination: { limit: 101 }) { total } }',
+        'Количество записей на странице',
+      ],
+    ]) {
+      const invalid = await guest.post('/graphql').send({ query }).expect(200);
+      expect(invalid.body.errors[0].message).toContain(message);
+    }
+  });
+
+  it('возвращает страницу восстановления для просроченного сеанса', async () => {
+    const getSession = jest.spyOn(Session, 'getSessionWithoutRequestResponse');
+    getSession.mockRejectedValueOnce(
+      new Session.Error({
+        type: Session.Error.TRY_REFRESH_TOKEN,
+        message: 'Истёк срок токена',
+      }),
+    );
+    try {
+      await member
+        .get('/profile')
+        .expect(401, /data-refresh-path="[^"]+\/session\/refresh"/)
+        .expect('Cache-Control', 'no-store');
+    } finally {
+      getSession.mockRestore();
+    }
+    await member.get('/profile').expect(200, /Зритель/);
+  });
+
   it('сохраняет отзывы и избранное, ограничивает чужие операции', async () => {
     const review = { movieId, rating: 9, comment: 'Понравился сюжет' };
     await member
@@ -256,6 +366,21 @@ describe('Приёмочные сценарии КИНО', () => {
         .send({});
     await save().expect(303);
     await save().expect(303);
+    expect(
+      await prisma.favorite.count({ where: { movieId, user: { email } } }),
+    ).toBe(1);
+    const cardFavorite = (action: 'add' | 'remove') =>
+      member
+        .post(`/favorites/movie/${movieId}`)
+        .set('Origin', origin)
+        .type('form')
+        .send({ action })
+        .expect(302);
+    await Promise.all([cardFavorite('remove'), cardFavorite('remove')]);
+    expect(
+      await prisma.favorite.count({ where: { movieId, user: { email } } }),
+    ).toBe(0);
+    await Promise.all([cardFavorite('add'), cardFavorite('add')]);
     expect(
       await prisma.favorite.count({ where: { movieId, user: { email } } }),
     ).toBe(1);

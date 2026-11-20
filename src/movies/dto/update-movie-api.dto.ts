@@ -1,49 +1,52 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, ValidateIf } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateMovieApiDto {
   @ApiPropertyOptional({ example: 'Шарарам' })
-  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined)
   @IsString()
   @IsNotEmpty()
   title?: string;
 
   @ApiPropertyOptional({ example: 'История о смешариках' })
-  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined)
   @IsString()
   @IsNotEmpty()
   description?: string;
 
   @ApiPropertyOptional({ example: 2020 })
-  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined)
   @Type(() => Number)
   @IsInt()
-  @Min(1900)
+  @Min(1888)
+  @Max(2147483647)
   year?: number;
 
   @ApiPropertyOptional({ example: 120 })
-  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined)
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(2147483647)
   duration?: number;
 
   @ApiPropertyOptional({ example: '12+' })
-  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined)
   @IsString()
   @IsNotEmpty()
   ageRating?: string;
 
-  @ApiPropertyOptional({ example: 'https://ex.com/img.jpg', nullable: true })
+  @ApiPropertyOptional({ example: 'https://ex.com/img.jpg', nullable: true, type: String })
   @IsOptional()
   @IsString()
-  posterUrl?: string;
+  posterUrl?: string | null;
 
   @ApiPropertyOptional({ example: 1 })
-  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined)
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(2147483647)
   genreId?: number;
 }

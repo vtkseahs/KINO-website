@@ -1,12 +1,14 @@
 import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { MoviesService } from '../movies.service';
+import { CreateMovieApiDto } from '../dto/create-movie-api.dto';
+import { UpdateMovieApiDto } from '../dto/update-movie-api.dto';
 import { MovieModel } from './models/movie.model';
 import { MoviesPageModel } from './models/movies-page.model';
 import { CreateMovieInput } from './inputs/create-movie.input';
 import { UpdateMovieInput } from './inputs/update-movie.input';
 import { MoviesPaginationInput } from './inputs/movies-pagination.input';
 import { GenreModel } from './models/genre.model';
-import { UseGuards } from '@nestjs/common';
+import { UseGuards, ValidationPipe } from '@nestjs/common';
 import { Role } from '../../../generated/prisma/client.js';
 import { SuperTokensAuthGuard } from '../../st-auth/guards/st-auth.guard';
 import { Roles } from '../../st-auth/decorators/roles.decorator';
@@ -33,7 +35,7 @@ export class MoviesResolver {
   @Roles(Role.ADMIN)
   @Mutation(() => MovieModel, { name: 'createMovie', description: 'Создать фильм' })
   async create(
-    @Args('input') input: CreateMovieInput) {
+    @Args('input', new ValidationPipe({ expectedType: CreateMovieApiDto, transform: true })) input: CreateMovieInput) {
     return this.moviesService.create(input);
   }
 
@@ -42,7 +44,7 @@ export class MoviesResolver {
   @Mutation(() => MovieModel, { name: 'updateMovie', description: 'Обновить фильм' })
   async update(
     @Args('id', { type: () => Int }) id: number,
-    @Args('input') input: UpdateMovieInput) {
+    @Args('input', new ValidationPipe({ expectedType: UpdateMovieApiDto, transform: true })) input: UpdateMovieInput) {
     return this.moviesService.update(id, input);
   }
 
