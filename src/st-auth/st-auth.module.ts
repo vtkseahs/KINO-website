@@ -32,6 +32,8 @@ export class StAuthModule implements NestModule {
       recipeList: [
         EmailPassword.init(),
         Session.init({
+          cookieSameSite: 'lax',
+          cookieSecure: new URL(options.apiDomain).protocol === 'https:',
           getTokenTransferMethod: () => 'cookie',
         }),
         Dashboard.init(),

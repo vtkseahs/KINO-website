@@ -1,7 +1,9 @@
+import { movieMetadata } from './movie-metadata';
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import type { MessageEvent } from '@nestjs/common';
 import { Subject } from 'rxjs';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '../../generated/prisma/client.js';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -27,12 +29,33 @@ export class MoviesService {
     });
   }
 
-  async findAll(query = '', genreId?: number) {
-    return this.prisma.movie.findMany({
-      where: { ...(query ? { title: { contains: query, mode: 'insensitive' } } : {}), ...(genreId ? { genreId } : {}) },
-      include: { genre: true},
-      orderBy: { id: 'asc' },
+  async findCatalog(filters: { query: string; genreId?: number; byTitle: boolean; page: number }) {
+    const pageSize = 24;
+    const where: Prisma.MovieWhereInput = {
+      title: filters.query ? { contains: filters.query, mode: 'insensitive' } : undefined,
+      genreId: filters.genreId,
+    };
+    const rows = await this.prisma.movie.findMany({
+      where,
+      include: { genre: true },
+      orderBy: filters.byTitle ? [{ title: 'asc' }, { id: 'asc' }] : { id: 'asc' },
+      skip: (filters.page - 1) * pageSize,
+      take: pageSize + 1,
     });
+    return { movies: rows.slice(0, pageSize), hasNext: rows.length > pageSize };
+  }
+
+  async findHomepageMovies(now: Date) {
+    const released = { OR: [{ premiereOn: null }, { premiereOn: { lte: now } }] };
+    const include = { genre: true };
+    const [featured, recent, premieres] = await Promise.all([
+      this.prisma.movie.findMany({ where: released, include, orderBy: { id: 'asc' }, take: 40 }),
+      this.prisma.movie.findMany({ include, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: 4 }),
+      this.prisma.movie.findMany({
+        where: { premiereOn: { gt: now } }, include, orderBy: [{ premiereOn: 'asc' }, { id: 'asc' }], take: 4,
+      }),
+    ]);
+    return { featured, recent, premieres };
   }
 
   async findOne(id: number) {
@@ -56,6 +79,7 @@ export class MoviesService {
   async create(createMovieDto: CreateMovieDto) {
     const movie = await this.prisma.movie.create({
       data: {
+        ...movieMetadata(createMovieDto),
         title: createMovieDto.title,
         description: createMovieDto.description,
         year: Number(createMovieDto.year),
@@ -79,6 +103,7 @@ export class MoviesService {
     const movie = await this.prisma.movie.update({
       where: { id },
       data: {
+        ...movieMetadata(updateMovieDto),
         title: updateMovieDto.title !==undefined
           ? updateMovieDto.title
           : undefined,
@@ -163,7 +188,6 @@ export class MoviesService {
           user: {
             select: {
               id: true,
-              email: true,
               name: true,
             },
           },

@@ -11,7 +11,6 @@ export class PublicCacheInterceptor implements NestInterceptor {
     /^\/api\/movies(?:\/\d+)?$/,
     /^\/api\/movies\/\d+\/reviews$/,
     /^\/api\/reviews(?:\/\d+)?$/,
-    /^\/api\/subscriptions(?:\/\d+)?$/,
   ];
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {

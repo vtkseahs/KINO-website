@@ -23,9 +23,14 @@
     <div class="best-movies">{{#each cards}}{{> card}}{{else}}<p>Фильмы скоро появятся в каталоге.</p>{{/each}}</div>
   </section>
 
+  <section class="feature-section">
+    <h2>Премьеры</h2>
+    <div class="best-movies">{{#each premieres}}{{> card}}{{else}}<p>Предстоящих премьер в каталоге пока нет.</p>{{/each}}</div>
+  </section>
+
   {{#if recent}}
     <section class="feature-section">
-      <h2>Недавно в каталоге</h2>
+      <h2>Новости каталога</h2>
       <div class="best-movies">{{#each recent}}{{> card}}{{/each}}</div>
     </section>
   {{/if}}

@@ -1,6 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Role } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service';
+
+const userSelect = { id: true, email: true, name: true, role: true } as const;
 
 @Injectable()
 export class UsersService {
@@ -12,7 +14,7 @@ export class UsersService {
     }
 
     const user = await this.prisma.user.findFirst({
-      where: { superTokensUserId },
+      where: { superTokensUserId }, select: userSelect,
     });
 
     if (!user) {
@@ -28,7 +30,7 @@ export class UsersService {
     name?: string;
   }) {
     const existingBySuperTokensId = await this.prisma.user.findUnique({
-      where: { superTokensUserId: params.superTokensUserId },
+      where: { superTokensUserId: params.superTokensUserId }, select: userSelect,
     });
 
     if (existingBySuperTokensId) {
@@ -40,16 +42,14 @@ export class UsersService {
     });
 
     if (existingByEmail) {
-      return this.prisma.user.update({
-        where: { id: existingByEmail.id },
-        data: {
-          superTokensUserId: params.superTokensUserId,
-        },
-      });
+      throw new ConflictException('Почта уже связана с другим локальным профилем');
     }
 
-    return this.prisma.user.create({
-      data: {
+    return this.prisma.user.upsert({
+      where: { superTokensUserId: params.superTokensUserId },
+      select: userSelect,
+      update: {},
+      create: {
         email: params.email,
         name: params.name || params.email.split('@')[0],
         password: '',

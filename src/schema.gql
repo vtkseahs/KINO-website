@@ -44,30 +44,6 @@ input CreateReviewInput {
   rating: Int!
 }
 
-"""создание подписки"""
-input CreateSubscriptionPlanInput {
-  """Описание подписки"""
-  description: String!
-
-  """Срок действия подписки"""
-  durationDays: Int!
-
-  """Стоимость подписки"""
-  price: Int!
-
-  """Название подписки"""
-  title: String!
-}
-
-"""Текущая подписка пользователя"""
-type CurrentSubscriptionModel {
-  """Дата окончания подписки"""
-  endsAt: DateTime
-
-  """Активная подписка пользователя"""
-  plan: SubscriptionPlanModel
-}
-
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
@@ -156,6 +132,9 @@ type GenreModel {
 
 """Фильм"""
 type MovieModel {
+  """Актёры"""
+  actors: [String!]!
+
   """Возрастной рейтинг"""
   ageRating: String!
 
@@ -165,8 +144,14 @@ type MovieModel {
   """Описание фильма"""
   description: String!
 
+  """Режиссёры"""
+  directors: [String!]!
+
   """Длительность в минутах"""
   duration: Int!
+
+  """Франшиза"""
+  franchise: String
 
   """Жанр фильма"""
   genre: GenreModel!
@@ -180,11 +165,20 @@ type MovieModel {
   """Ссылка на постер"""
   posterUrl: String
 
+  """Дата премьеры"""
+  premiereOn: DateTime
+
   """Название фильма"""
   title: String!
 
+  """Отметка о необычном кино"""
+  unusual: Boolean!
+
   """Дата последнего обновления фильма"""
   updatedAt: DateTime!
+
+  """Ссылки на онлайн-кинотеатры"""
+  watchLinks: [String!]!
 
   """Год выпуска"""
   year: Int!
@@ -215,12 +209,6 @@ input MoviesPaginationInput {
 }
 
 type Mutation {
-  """Оформить подписку на тариф"""
-  buySubscription(planId: Int!): SubscriptionPlanModel!
-
-  """Отменить текущую подписку пользователя"""
-  cancelSubscription: Boolean!
-
   """Добавить фильм в избранное"""
   createFavorite(input: CreateFavoriteInput!): FavoriteModel!
 
@@ -229,9 +217,6 @@ type Mutation {
 
   """Создать отзыв"""
   createReview(input: CreateReviewInput!): ReviewModel!
-
-  """Создать тариф"""
-  createSubscriptionPlan(input: CreateSubscriptionPlanInput!): SubscriptionPlanModel!
 
   """Удалить запись избранного"""
   removeFavorite(id: Int!): Boolean!
@@ -245,9 +230,6 @@ type Mutation {
   """Удалить отзыв"""
   removeReview(id: Int!): Boolean!
 
-  """Удалить тариф"""
-  removeSubscriptionPlan(id: Int!): Boolean!
-
   """Обновить запись избранного"""
   updateFavorite(id: Int!, input: UpdateFavoriteInput!): FavoriteModel!
 
@@ -259,9 +241,6 @@ type Mutation {
 
   """Обновить отзыв"""
   updateReview(id: Int!, input: UpdateReviewInput!): ReviewModel!
-
-  """Обновить тариф"""
-  updateSubscriptionPlan(id: Int!, input: UpdateSubscriptionPlanInput!): SubscriptionPlanModel!
 }
 
 """Профиль пользователя"""
@@ -278,49 +257,19 @@ type ProfileModel {
   """имя пользователя"""
   name: String!
 
+  """Активен ли КИНО Plus"""
+  plusActive: Boolean!
+
   """роль"""
   role: String!
-
-  """Дата окончания подписки"""
-  subscriptionEndsAt: String
-
-  """Текущая подписка пользователя"""
-  subscriptionPlan: ProfileSubscriptionPlanModel
-}
-
-"""подписка в профиле пользователя"""
-type ProfileSubscriptionPlanModel {
-  """Описание подписки"""
-  description: String!
-
-  """Длительность подписки"""
-  durationDays: Int!
-
-  """id подписки"""
-  id: Int!
-
-  """Стоимость подписки"""
-  price: Int!
-
-  """Название подписки"""
-  title: String!
 }
 
 type Query {
-  """Получить текущую подписку пользователя"""
-  currentSubscription: CurrentSubscriptionModel!
-
   """Получить избранное пользователя"""
   get_all_favorites(pagination: FavoritesPaginationInput): FavoritesPageModel!
 
-  """Получить список тарифов"""
-  get_all_subscriptionPlans(pagination: SubscriptionsPaginationInput): SubscriptionPlansPageModel!
-
   """Получить запись избранного по id"""
   get_one_favorites(id: Int!): FavoriteModel!
-
-  """Получить тариф по id"""
-  get_one_subscriptionPlan(id: Int!): SubscriptionPlanModel!
 
   """Получить фильм по id"""
   movie(id: Int!): MovieModel!
@@ -367,9 +316,6 @@ type ReviewMovieModel {
 
 """Пользователь, оставивший отзыв"""
 type ReviewUserModel {
-  """почта пользователя"""
-  email: String!
-
   """id пользователя"""
   id: Int!
 
@@ -394,51 +340,6 @@ type ReviewsPageModel {
 
 """Ппагинация отзывов"""
 input ReviewsPaginationInput {
-  """Количество элементов на стр"""
-  limit: Int = 10
-
-  """Номер стр"""
-  page: Int = 1
-}
-
-"""Тариф подписки"""
-type SubscriptionPlanModel {
-  """Дата создания"""
-  createdAt: DateTime!
-
-  """Описание тарифа"""
-  description: String!
-
-  """Срок действия тарифа"""
-  durationDays: Int!
-
-  """id тарифа"""
-  id: Int!
-
-  """Стоимость тарифа"""
-  price: Int!
-
-  """Название тарифа"""
-  title: String!
-}
-
-"""Страница тарифов подписки"""
-type SubscriptionPlansPageModel {
-  """Список тарифов"""
-  data: [SubscriptionPlanModel!]!
-
-  """Размер стр"""
-  limit: Int!
-
-  """Текущая стр"""
-  page: Int!
-
-  """Общее количество тарифов"""
-  total: Int!
-}
-
-"""Параметры пагинации подписки"""
-input SubscriptionsPaginationInput {
   """Количество элементов на стр"""
   limit: Int = 10
 
@@ -495,19 +396,4 @@ input UpdateReviewInput {
 
   """Оценка фильма"""
   rating: Int
-}
-
-"""Данные для обновления подписки"""
-input UpdateSubscriptionPlanInput {
-  """Описание подписки"""
-  description: String
-
-  """Срок действия подписки"""
-  durationDays: Int
-
-  """Стоимость подписки"""
-  price: Int
-
-  """Название подписки"""
-  title: String
 }

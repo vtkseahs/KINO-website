@@ -30,7 +30,6 @@ export class ReviewsService {
         user: {
           select: {
             id: true,
-            email: true,
             name: true,
           },
         },
@@ -52,7 +51,6 @@ export class ReviewsService {
         user: {
           select: {
             id: true,
-            email: true,
             name: true,
           },
         },
@@ -100,7 +98,6 @@ export class ReviewsService {
           user: {
             select: {
               id: true,
-              email: true,
               name: true,
             },
           },
@@ -141,7 +138,6 @@ export class ReviewsService {
           user: {
             select: {
               id: true,
-              email: true,
               name: true,
             },
           },
@@ -187,7 +183,6 @@ export class ReviewsService {
           user: {
             select: {
               id: true,
-              email: true,
               name: true,
             },
           },

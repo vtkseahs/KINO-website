@@ -10,7 +10,7 @@
   <section class="movie-form-page">
     <div class="page-header auth-card">
       <h2>Вход в Kino</h2>
-      <p>Войдите в аккаунт, чтобы управлять фильмами, отзывами, избранным и подпиской.</p>
+      <p>Войдите в аккаунт, чтобы добавлять отзывы, сохранять фильмы и пользоваться КИНО Plus.</p>
     </div>
 
     {{#if errorMessage}}
@@ -20,7 +20,7 @@
     {{/if}}
 
     <form action="/auth/login" method="POST" class="entity-form auth-card">
-      {{#if returnToPlus}}<input type="hidden" name="next" value="plus">{{/if}}
+      {{#if next}}<input type="hidden" name="next" value="{{next}}">{{/if}}
       <div class="form-field">
         <label for="login">Логин</label>
         <input

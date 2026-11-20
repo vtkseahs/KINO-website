@@ -129,12 +129,13 @@ export class MoviesApiController {
     },
   })
 
-  @UseInterceptors(FileInterceptor('poster'))
+  @UseInterceptors(FileInterceptor('poster', { limits: { fileSize: 5_000_000, files: 1 } }))
   async uploadPoster(
     @UploadedFile(
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 5_000_000 }),
+          new FileTypeValidator({ fileType: /^image\/(jpeg|png|webp|gif)$/ }),
         ],
       }),
     )

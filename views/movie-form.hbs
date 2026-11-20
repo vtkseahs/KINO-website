@@ -46,7 +46,7 @@
           >
         {{/if}}
 
-        <input type="file" name="poster">
+        <input type="file" name="poster" accept="image/png,image/jpeg,image/webp,image/gif">
         <input type="text" name="posterUrl" value="{{movie.posterUrl}}" placeholder="Или вставьте ссылку на постер">
       </div>
 
@@ -63,6 +63,16 @@
           {{/each}}
         </select>
       </div>
+
+      <fieldset class="movie-metadata">
+        <legend>Для подбора и уведомлений</legend>
+        <div class="form-field"><label for="actors">Актёры через запятую</label><input id="actors" name="actorNames" maxlength="800" value="{{movie.actorNames}}"></div>
+        <div class="form-field"><label for="directors">Режиссёры через запятую</label><input id="directors" name="directorNames" maxlength="500" value="{{movie.directorNames}}"></div>
+        <div class="form-field"><label for="franchise">Франшиза</label><input id="franchise" name="franchise" maxlength="120" value="{{movie.franchise}}"></div>
+        <div class="form-field"><label for="release-date">Дата премьеры</label><input id="release-date" type="date" name="releaseDate" value="{{movie.releaseDate}}"></div>
+        <div class="form-field"><label for="unusual">Необычное кино</label><select id="unusual" name="unusual"><option value="false">Нет</option><option value="true" {{#if movie.unusual}}selected{{/if}}>Да</option></select></div>
+        <div class="form-field"><label for="providers">Где посмотреть · одна HTTPS-ссылка на строку</label><textarea id="providers" name="providerUrls" maxlength="2500">{{movie.providerUrls}}</textarea></div>
+      </fieldset>
 
       <div class="form-actions">
         <button type="submit" class="button">

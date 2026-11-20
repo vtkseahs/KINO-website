@@ -6,12 +6,19 @@
     <p class="feature-meta">{{genre.name}} · {{year}} · {{duration}} мин</p>
     <h3><a href="/movies/{{id}}">{{title}}</a></h3>
     {{#if reason}}<p class="feature-meta">{{reason}}</p>{{/if}}
+    {{#if saved}}<p class="feature-meta">В избранном</p>{{else}}
     <form action="/favorites/movie/{{id}}/add" method="post">
       {{#if @root.pickerUsed}}<input type="hidden" name="pick" value="1">{{/if}}
       <input type="hidden" name="mood" value="{{@root.mood}}">
       <input type="hidden" name="runtime" value="{{@root.runtime}}">
+      <input type="hidden" name="tone" value="{{@root.tone}}">
+      <input type="hidden" name="audience" value="{{@root.audience}}">
+      <input type="hidden" name="discovery" value="{{@root.discovery}}">
+      {{#each @root.excluded}}<input type="hidden" name="excluded" value="{{this}}">{{/each}}
+      <textarea hidden name="seen">{{@root.seen}}</textarea>
       <input type="hidden" name="period" value="{{@root.period}}">
       <button class="button button--secondary" type="submit" aria-label="Добавить «{{title}}» в избранное">В избранное</button>
     </form>
+    {{/if}}
   </div>
 </article>

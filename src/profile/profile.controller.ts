@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Render, Res, Param, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Post, Req, Render, Res, Param, ParseIntPipe } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { ProfileService } from './profile.service';
 import { AuthService } from '../auth/auth.service';
@@ -21,7 +21,6 @@ export class ProfileController {
       ...auth,
       title: 'Профиль Kino',
       profile,
-      plusActive: profile.subscriptionPlan?.title === 'КИНО Plus' && !!profile.subscriptionEndsAt && profile.subscriptionEndsAt > new Date(),
     });
   }
 
@@ -53,10 +52,12 @@ export class ProfileController {
 
   @Post(':id/delete')
   async deleteProfile(
+    @Param('id', ParseIntPipe) id: number,
     @Req() req: Request,
     @Res() res: Response,
   ) {
     const currentUser = await this.authService.requireUser(req);
+    if (id !== currentUser.id) throw new ForbiddenException('Можно удалить только свой аккаунт');
     await this.profileService.removeProfile(currentUser.id);
     await this.authService.logout(req, res);
     return res.redirect('/');

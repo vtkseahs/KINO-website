@@ -4,9 +4,6 @@ class ReviewUserDto {
   @ApiProperty({ example: 3 })
   id: number;
 
-  @ApiProperty({ example: 'test@test.com' })
-  email: string;
-
   @ApiProperty({ example: 'Vika' })
   name: string;
 }

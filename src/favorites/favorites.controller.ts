@@ -30,19 +30,20 @@ export class FavoritesController {
     @Req() req: Request,
     @Param('movieId', ParseIntPipe) movieId: number,
     @Res() res: Response,
-    @Body('mood') mood?: string,
-    @Body('period') period?: string,
-    @Body('runtime') runtime?: string,
-    @Body('pick') pick?: string,
+    @Body() body: Record<string, unknown>,
   ) {
     const user = await this.authService.requireUser(req);
     await this.favoritesService.addMovie(user.id, movieId);
     const query = new URLSearchParams();
-    if (typeof mood === 'string' && mood) query.set('mood', mood);
-    if (typeof period === 'string' && period) query.set('period', period);
-    if (typeof runtime === 'string' && runtime) query.set('runtime', runtime);
-    if (pick === '1') query.set('pick', pick);
-    return res.redirect(query.size ? `/subscribe?${query}` : '/subscribe');
+    for (const key of ['mood', 'period', 'runtime', 'pick', 'tone', 'audience', 'discovery', 'seen']) {
+      const value = body?.[key];
+      if (typeof value === 'string' && value) query.set(key, value.slice(0, 500));
+    }
+    const excluded = Array.isArray(body?.excluded) ? body.excluded : [body?.excluded];
+    for (const id of excluded.slice(0, 50)) {
+      if (typeof id === 'string' && /^\d+$/.test(id)) query.append('excluded', id);
+    }
+    return res.redirect(303, query.size ? `/subscribe?${query}${query.get('pick') === '1' ? '#mood-section' : ''}` : '/subscribe');
   }
 
   @Post('movie/:movieId')

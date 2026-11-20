@@ -1,0 +1,116 @@
+<section class="feature-section" id="journal">
+  <h2>Кинодневник</h2>
+  {{#if journal}}
+    <ul class="plus-journal">
+      {{#each journal}}
+        <li>
+          <article>
+            <div>
+              <h3><a href="/movies/{{movieId}}#journal-entry">{{movie.title}}</a></h3>
+              <p class="feature-meta">{{statusLabel}}{{#if date}} · {{date}}{{/if}}{{#if company}} · {{company}}{{/if}}</p>
+              {{#if impression}}<p>{{impression}}</p>{{/if}}
+              {{#if notes}}<details><summary>Личная заметка</summary><p class="plus-note">{{notes}}</p></details>{{/if}}
+            </div>
+            <form action="/subscribe/journal/{{movieId}}/delete" method="post" onsubmit="return confirm('Удалить запись из дневника?')">
+              <button class="button button--secondary" type="submit" aria-label="Удалить запись о фильме «{{movie.title}}»">Удалить</button>
+            </form>
+          </article>
+        </li>
+      {{/each}}
+    </ul>
+  {{else}}
+    <p>Откройте <a href="/movies">фильм в каталоге</a>, чтобы добавить первую запись.</p>
+  {{/if}}
+</section>
+
+<section class="feature-section" id="watchlist">
+  <h2>Умный список просмотра</h2>
+  <p class="feature-meta">Собирается из избранного и отметок «Хочу посмотреть» и «Пересмотрю».</p>
+  <div class="feature-columns">
+    {{#each watchlist}}
+      <div><h3>{{title}}</h3>
+        <ul>{{#each movies}}<li><a href="/movies/{{id}}">{{title}}</a> <span class="feature-meta">{{#if premiereLabel}}{{premiereLabel}}{{else}}{{duration}} мин{{/if}}</span></li>{{/each}}</ul>
+      </div>
+    {{else}}<p>Сохраните фильм в избранное или отметьте его в дневнике.</p>{{/each}}
+  </div>
+</section>
+
+<section class="feature-section" id="taste">
+  <h2>Профиль вкусов</h2>
+  <div class="feature-metrics">
+    <p><strong>{{taste.watchedCount}}</strong> Фильмов из дневника</p>
+    {{#if taste.average}}<p><strong>{{taste.average}}/10</strong> Средняя оценка</p>{{/if}}
+    {{#if taste.comparison}}<p><strong>{{taste.comparison.difference}}</strong> Среднее расхождение с оценками зрителей · {{taste.comparison.count}} общих фильмов</p>{{/if}}
+  </div>
+  <div class="feature-columns">
+    <div><h3>Любимые жанры</h3><ul>{{#each taste.favoriteGenres}}<li>{{label}} <strong>{{count}}</strong></li>{{else}}<li>Нужны отметки о просмотрах.</li>{{/each}}</ul></div>
+    <div><h3>Актёры</h3><ul>{{#each taste.favoriteActors}}<li>{{label}} <strong>{{count}}</strong></li>{{else}}<li>Имена появятся после просмотров фильмов с указанным составом.</li>{{/each}}</ul></div>
+    <div><h3>Режиссёры</h3><ul>{{#each taste.favoriteDirectors}}<li>{{label}} <strong>{{count}}</strong></li>{{else}}<li>Имена появятся после просмотров фильмов с указанными режиссёрами.</li>{{/each}}</ul></div>
+    <div><h3>Десятилетия</h3><ul>{{#each taste.decades}}<li>{{label}} <strong>{{count}}</strong></li>{{else}}<li>Нужны отметки о просмотрах.</li>{{/each}}</ul></div>
+    <div><h3>Жанры брошенных фильмов</h3><ul>{{#each taste.dropped}}<li>{{label}} <strong>{{count}}</strong></li>{{else}}<li>Брошенных фильмов пока нет.</li>{{/each}}</ul></div>
+  </div>
+</section>
+
+<section class="feature-section" id="report">
+  <h2>Киноитоги</h2>
+  <form class="feature-actions feature-filter" action="/subscribe#report" method="get">
+    <input type="hidden" name="period" value="{{period}}">
+    <label for="report-period">Отчёт</label>
+    <select name="report" id="report-period">
+      <option value="month">За месяц</option>
+      <option value="year" {{#if yearly}}selected{{/if}}>За год</option>
+    </select>
+    <label for="report-date">Месяц и год</label>
+    <input type="month" name="month" id="report-date" value="{{month}}" placeholder="ГГГГ-ММ" pattern="[0-9]{4}-[0-9]{2}" required>
+    <button class="button button--secondary" type="submit">Показать</button>
+  </form>
+  <h3>{{report.label}}</h3>
+  <div class="feature-metrics">
+    <p><strong>{{report.count}}</strong> Фильмов</p>
+    <p><strong>{{report.minutes}}</strong> Минут кино</p>
+  </div>
+  {{#if report.count}}
+    <dl class="plus-report">
+      {{#if report.favoriteGenre}}<dt>Самый популярный жанр</dt><dd>{{report.favoriteGenre}}</dd>{{/if}}
+      {{#if report.newGenre}}<dt>Открытый жанр</dt><dd>{{report.newGenre}}</dd>{{/if}}
+      {{#if report.best}}<dt>Фильм с высшей оценкой</dt><dd>{{report.best.title}} · {{report.best.rating}}/10</dd>{{/if}}
+      {{#if report.worst}}<dt>Фильм с низшей оценкой</dt><dd>{{report.worst.title}} · {{report.worst.rating}}/10</dd>{{/if}}
+      {{#if report.longest}}<dt>Самый длинный фильм</dt><dd>{{report.longest.title}} · {{report.longest.duration}} мин</dd>{{/if}}
+      {{#if report.shortest}}<dt>Самый короткий фильм</dt><dd>{{report.shortest.title}} · {{report.shortest.duration}} мин</dd>{{/if}}
+      {{#if report.unusual}}<dt>Необычный выбор</dt><dd>{{report.unusual.title}}</dd>{{/if}}
+    </dl>
+    <button type="button" class="button button--secondary" id="download-report" hidden
+      data-period="{{report.label}}" data-count="{{report.count}}" data-minutes="{{report.minutes}}">Скачать карточку итогов</button>
+    <p id="report-feedback" role="status"></p>
+  {{else}}
+    <p>За выбранный период нет фильмов с датой просмотра в дневнике.</p>
+  {{/if}}
+</section>
+
+<section class="feature-section" id="interests">
+  <h2>Интересы и уведомления</h2>
+  <form class="plus-picker-form" action="/subscribe/interests" method="post">
+    <div><label for="interest-kind">Что отслеживать</label><select id="interest-kind" name="kind">
+      {{#each interestKinds}}<option value="{{value}}">{{label}}</option>{{/each}}
+    </select></div>
+    <div><label for="interest-name">Имя или точное название из карточки</label><input id="interest-name" name="label" maxlength="120" aria-describedby="interest-help"></div>
+    <div><button type="submit" class="button">Отслеживать</button></div>
+  </form>
+  <p id="interest-help" class="feature-meta">Оставьте название пустым, чтобы получать напоминания обо всех премьерах.</p>
+  {{#if interests}}
+    <ul class="plus-interests">{{#each interests}}<li>
+      <span>{{kindLabel}} · {{label}}</span>
+      <form action="/subscribe/interests/{{id}}/delete" method="post"><button class="button button--secondary" type="submit" aria-label="Перестать отслеживать {{label}}">Убрать</button></form>
+    </li>{{/each}}</ul>
+  {{/if}}
+  <h3>Уведомления</h3>
+  {{#if unread}}
+    <form action="/subscribe/notifications/read" method="post"><button class="button button--secondary" type="submit">Отметить все прочитанными</button></form>
+  {{/if}}
+  <ul class="plus-notifications">
+    {{#each notifications}}<li>
+      {{#if isNew}}<strong>Новое</strong> · {{/if}}<a href="/movies/{{id}}">{{title}}</a>
+      <p class="feature-meta">{{#if premiere}}Премьера {{premiere}}{{else}}Добавлен в каталог{{/if}} · {{labels}}</p>
+    </li>{{else}}<li>Пока нет фильмов и премьер по вашим интересам.</li>{{/each}}
+  </ul>
+</section>

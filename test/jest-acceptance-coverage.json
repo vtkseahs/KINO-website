@@ -1,0 +1,33 @@
+{
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
+  "rootDir": "..",
+  "testEnvironment": "node",
+  "testRegex": "(?:\\.e2e-spec|\\.spec)\\.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^(\\.{1,2}/.*)\\.js$": "$1"
+  },
+  "collectCoverage": true,
+  "coverageDirectory": "<rootDir>/coverage",
+  "collectCoverageFrom": [
+    "src/auth/auth.service.ts",
+    "src/st-auth/guards/st-auth.guard.ts",
+    "src/users/users.service.ts",
+    "src/profile/profile.service.ts",
+    "src/reviews/reviews.service.ts",
+    "src/favorites/favorites.service.ts",
+    "src/kino-plus/*.ts",
+    "!src/kino-plus/*.spec.ts"
+  ],
+  "coverageThreshold": {
+    "global": {
+      "lines": 80
+    }
+  }
+}

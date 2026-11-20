@@ -10,7 +10,7 @@
   <section class="profile-section">
     <header class="profile-section-header">
       <h2>Мой профиль</h2>
-      <p>Данные аккаунта, роль и текущая подписка</p>
+      <p>Данные аккаунта, роль и доступ к КИНО Plus</p>
     </header>
 
     <article class="profile-card">
@@ -27,16 +27,14 @@
         </div>
       </div>
 
-      {{#if plusActive}}
+      {{#if profile.plusActive}}
         <div class="profile-subscribe">
           <div class="profile-subscribe-header">
-            <h4>{{profile.subscriptionPlan.title}}</h4>
-            <span class="subscription-status">Активна</span>
+            <h4>КИНО Plus</h4>
+            <span class="subscription-status">Доступ активен</span>
           </div>
 
-          <p>{{profile.subscriptionPlan.description}}</p>
           <p>Доступны персональные функции КИНО Plus.</p>
-          <p><strong>Действует до:</strong> {{profile.subscriptionEndsAt}}</p>
         </div>
       {{else}}
         <div class="profile-subscribe">

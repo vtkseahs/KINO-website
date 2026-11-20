@@ -1,17 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
   if (!document.getElementById('movies-list')) return;
-
   const source = new EventSource('/movies/events');
 
-  source.onmessage = () => {
-    // Обновляем карточки, сохраняя текущий поисковый запрос.
-    fetch(window.location.href, { headers: { 'Cache-Control': 'no-cache' } })
-      .then(response => response.ok ? response.text() : Promise.reject())
-      .then(html => {
-        const next = new DOMParser().parseFromString(html, 'text/html').querySelector('#movies-list .best-movies');
-        const current = document.querySelector('#movies-list .best-movies');
-        if (next && current) current.replaceWith(next);
-      })
-      .catch(() => {});
+  source.onmessage = async () => {
+    try {
+      const response = await fetch(window.location.href, { cache: 'no-store' });
+      if (!response.ok) return;
+      const page = new DOMParser().parseFromString(await response.text(), 'text/html');
+      for (const selector of ['#movies-list .best-movies', '#catalog-pages']) {
+        const updated = page.querySelector(selector);
+        if (updated) document.querySelector(selector)?.replaceWith(updated);
+      }
+    } catch {
+      // The event stream reconnects when the connection is available again.
+    }
   };
 });

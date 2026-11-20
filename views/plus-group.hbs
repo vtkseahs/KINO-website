@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>{{> head}}</head>
+<body>
+{{> header}}
+<main class="content feature-page">
+  <section class="feature-section">
+    <h1>Что посмотрим вместе?</h1>
+    <p>Отправьте ссылку участникам. Голосование открыто сутки.</p>
+    <div class="feature-actions">
+      <button id="copy-group-link" class="button button--secondary" type="button" hidden>Скопировать ссылку</button>
+      <a href="/subscribe#mood-section">К кино-консьержу</a>
+    </div>
+    <p id="group-feedback" role="status"></p>
+    <form action="/subscribe/groups/{{groupId}}" method="post">
+      <div class="plus-grid">
+        {{#each movies}}
+          <article class="plus-film">
+            <a class="plus-film-poster" href="/movies/{{id}}"><img src="{{moviePoster posterUrl title year}}" alt="{{title}}"></a>
+            <div class="plus-film-info">
+              <h2><a href="/movies/{{id}}">{{title}}</a></h2>
+              <p class="feature-meta">{{genre.name}} · {{year}} · {{duration}} мин</p>
+              <p>{{votes}} гол.</p>
+              {{#if @root.isAuth}}
+                {{#if voted}}<strong>Ваш голос</strong>{{else}}
+                  <button class="button" type="submit" name="movieId" value="{{id}}" aria-label="Голосовать за «{{title}}»">Голосовать</button>
+                {{/if}}
+              {{/if}}
+            </div>
+          </article>
+        {{else}}<p>Выбранные фильмы больше не доступны в каталоге.</p>{{/each}}
+      </div>
+    </form>
+    {{#unless isAuth}}<p><a href="/auth/login?next=group:{{groupId}}">Войдите, чтобы проголосовать</a></p>{{/unless}}
+  </section>
+</main>
+{{> footer}}
+{{> scripts}}
+<script defer src="/js/kino-plus.js"></script>
+</body>
+</html>

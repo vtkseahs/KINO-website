@@ -14,19 +14,30 @@ import { errorHandler } from 'supertokens-node/framework/express';
 
 const hbs = require('hbs');
 
-async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+export async function configureApp(app: NestExpressApplication) {
+  const websiteOrigin = new URL(process.env.SUPERTOKENS_WEBSITE_DOMAIN
+    || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000').origin;
+  if (process.env.RENDER === 'true') app.set('trust proxy', 1);
   app.enableCors({
-    origin: process.env.SUPERTOKENS_WEBSITE_DOMAIN || 'http://localhost:3000',
+    origin: websiteOrigin,
     allowedHeaders: ['content-type', ...SuperTokens.getAllCORSHeaders()],
     credentials: true,
   });
-  // Browser form submissions with an Origin must originate from this site.
   app.use((req: Request, res: Response, next: NextFunction) => {
-    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method) || !req.headers.origin) return next();
-    const configured = process.env.SUPERTOKENS_WEBSITE_DOMAIN;
-    const expected = configured || `${req.protocol}://${req.get('host')}`;
-    if (req.headers.origin !== expected.replace(/\/$/, '')) return res.status(403).send('Недопустимый источник запроса');
+    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+    let source = req.get('origin');
+    if (!source && req.get('referer')) {
+      try {
+        source = new URL(req.get('referer')!).origin;
+      } catch {
+        return res.status(403).send('Недопустимый источник запроса');
+      }
+    }
+    const site = req.get('sec-fetch-site');
+    const hasSessionCookie = /(?:^|;\s*)(?:sAccessToken|sRefreshToken)=/.test(req.headers.cookie ?? '');
+    if ((source && source !== websiteOrigin) || (!source && (hasSessionCookie || (site && site !== 'same-origin')))) {
+      return res.status(403).send('Недопустимый источник запроса');
+    }
     return next();
   });
   app.useGlobalFilters(new ApiExceptionFilter());
@@ -56,6 +67,12 @@ async function bootstrap() {
     swaggerOptions: { persistAuthorization: true, },
   });
   app.use(errorHandler());
-  await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+
+async function bootstrap() {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  await configureApp(app);
+  app.enableShutdownHooks();
+  await app.listen(process.env.PORT ?? 3000, process.env.BIND_HOST || '0.0.0.0');
+}
+if (require.main === module) void bootstrap();

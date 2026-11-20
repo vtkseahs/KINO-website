@@ -13,10 +13,8 @@
       <p>Выбирайте на свой вкус</p>
 
       <div class="movies-controls">
-        <form action="/movies" method="get"><label for="catalog-search">Поиск по названию</label> <input id="catalog-search" name="q" type="search" value="{{query}}" placeholder="Название фильма"><label for="genre">Жанр</label> <select id="genre" name="genre"><option value="">Все жанры</option>{{#each genres}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select> <button class="button" type="submit">Найти</button></form>
-        <button class="button sort" data-sort="movie-title">
-          Сортировать по названию
-        </button>
+        <form action="/movies" method="get">{{#if byTitle}}<input type="hidden" name="sort" value="title">{{/if}}<label for="catalog-search">Поиск по названию</label> <input id="catalog-search" name="q" type="search" value="{{query}}" placeholder="Название фильма"><label for="genre">Жанр</label> <select id="genre" name="genre"><option value="">Все жанры</option>{{#each genres}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select> <button class="button" type="submit">Найти</button></form>
+        <a href="{{sortLink}}" class="button button--secondary">{{#if byTitle}}По порядку добавления{{else}}По названию{{/if}}</a>
       </div>
     </header>
 
@@ -26,6 +24,16 @@
       {{else}}
         <p>Фильмы не найдены. Попробуйте изменить запрос.</p>
       {{/each}}
+    </div>
+
+    <div id="catalog-pages">
+      {{#if previous}}
+        <nav class="feature-actions catalog-pagination" aria-label="Страницы каталога">
+          <a href="{{previous}}" rel="prev">Назад</a><span>Страница {{page}}</span>{{#if next}}<a href="{{next}}" rel="next">Дальше</a>{{/if}}
+        </nav>
+      {{else}}{{#if next}}
+        <nav class="feature-actions catalog-pagination" aria-label="Страницы каталога"><span>Страница {{page}}</span><a href="{{next}}" rel="next">Дальше</a></nav>
+      {{/if}}{{/if}}
     </div>
 
     {{#if isAdmin}}

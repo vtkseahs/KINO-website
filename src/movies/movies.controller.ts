@@ -1,5 +1,8 @@
+import { dateKey, journalStatuses } from '../kino-plus/plus-forms';
+import { PlusAccessService } from '../kino-plus/plus-access.service';
+import { safeWatchLink } from './movie-metadata';
 import { moviePoster } from './movie-poster';
-import { Body, Controller, Get, Param, Post, Req, Render, Res, Sse, ParseIntPipe, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, Query, } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, Render, Res, Sse, ParseIntPipe, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, Query, } from '@nestjs/common';
 import type { MessageEvent } from '@nestjs/common';
 import type { Observable } from 'rxjs';
 import { MoviesService } from './movies.service';
@@ -15,7 +18,7 @@ import { StorageService } from '../storage/storage.service';
 @ApiExcludeController()
 @Controller('movies')
 export class MoviesController {
-  constructor(private readonly moviesService: MoviesService, private readonly authService: AuthService,private readonly storageService: StorageService, private readonly prisma: PrismaService,) {}
+  constructor(private readonly moviesService: MoviesService, private readonly authService: AuthService,private readonly storageService: StorageService, private readonly prisma: PrismaService, private readonly plusAccess: PlusAccessService,) {}
   @Sse('events')
   events(): Observable<MessageEvent> {
     return this.moviesService.getEvents();
@@ -23,11 +26,29 @@ export class MoviesController {
 
   @Get()
   @Render('movies')
-  async getMoviesPage(@Req() req: Request, @Query('q') q = '', @Query('genre') genre = '') {
-    const auth = await this.authService.getAuthData(req);
-    const genreId = Number(genre);
-    const movies = await this.moviesService.findAll(q.trim(), Number.isInteger(genreId) && genreId > 0 ? genreId : undefined);
-    const genres = (await this.moviesService.findGenres()).map(item => ({ ...item, selected: item.id === genreId }));
+  async getMoviesPage(@Req() req: Request, @Query('q') q = '', @Query('genre') genre = '',
+    @Query('page') rawPage = '1', @Query('sort') sort = '') {
+    const query = typeof q === 'string' ? q.trim().slice(0, 150) : '';
+    const parsedGenre = typeof genre === 'string' ? Number(genre) : NaN;
+    const genreId = Number.isSafeInteger(parsedGenre) && parsedGenre > 0 && parsedGenre <= 2147483647
+      ? parsedGenre : undefined;
+    const parsedPage = typeof rawPage === 'string' ? Number(rawPage) : NaN;
+    const page = Number.isSafeInteger(parsedPage) && parsedPage > 0 && parsedPage <= 100000 ? parsedPage : 1;
+    const byTitle = sort === 'title';
+    const [auth, { movies, hasNext }, genreRows] = await Promise.all([
+      this.authService.getAuthData(req),
+      this.moviesService.findCatalog({ query, genreId, byTitle, page }),
+      this.moviesService.findGenres(),
+    ]);
+    const genres = genreRows.map(item => ({ ...item, selected: item.id === genreId }));
+    const link = (targetPage: number, sortByTitle = byTitle) => {
+      const params = new URLSearchParams();
+      if (query) params.set('q', query);
+      if (genreId) params.set('genre', String(genreId));
+      if (sortByTitle) params.set('sort', 'title');
+      if (targetPage > 1) params.set('page', String(targetPage));
+      return params.size ? `/movies?${params}` : '/movies';
+    };
 
     const cards = movies.map((movie) => ({
       id: movie.id,
@@ -41,13 +62,17 @@ export class MoviesController {
       ...auth,
       title: 'Каталог фильмов Kino',
       cards,
-      query: q,
+      query,
       genres,
+      page,
+      byTitle,
+      sortLink: link(1, !byTitle),
+      previous: page > 1 ? link(page - 1) : null,
+      next: hasNext ? link(page + 1) : null,
     };
   }
 
   @Get('add')
-  @Render('movie-form')
   async getAddMoviePage(@Req() req: Request, @Res() res: Response) {
     await this.authService.requireAdmin(req);
     const auth = await this.authService.getAuthData(req);
@@ -65,14 +90,14 @@ export class MoviesController {
   }
 
   @Post('add')
-  @UseInterceptors(FileInterceptor('poster'))
+  @UseInterceptors(FileInterceptor('poster', { limits: { fileSize: 5_000_000, files: 1 } }))
   async createMovie(
     @Req() req: Request,
     @Body() createMovieDto: CreateMovieDto,
     @UploadedFile(
       new ParseFilePipe({
         fileIsRequired: false,
-        validators: [new MaxFileSizeValidator({ maxSize: 5_000_000 }),],
+        validators: [new MaxFileSizeValidator({ maxSize: 5_000_000 }), new FileTypeValidator({ fileType: /^image\/(jpeg|png|webp|gif)$/ }),],
       }),
     )
     poster: Express.Multer.File | undefined,
@@ -99,7 +124,18 @@ export class MoviesController {
     if (auth.user) await this.prisma.movieView.create({ data: { userId: auth.user.id, movieId: id } });
     const reviews = await this.prisma.review.findMany({ where: { movieId: id }, include: { user: { select: { name: true } } }, orderBy: { createdAt: 'desc' } });
     const favorite = auth.user ? await this.prisma.favorite.findUnique({ where: { userId_movieId: { userId: auth.user.id, movieId: id } } }) : null;
-    return { ...auth, title: movie.title, movie, favorite, reviews: reviews.map(review => ({ ...review, canManage: review.userId === auth.user?.id })), ownReview: reviews.some(review => review.userId === auth.user?.id) };
+    const plusActive = auth.user ? await this.plusAccess.isActive(auth.user.id) : false;
+    const entry = auth.user && plusActive ? await this.prisma.journalEntry.findUnique({
+      where: { userId_movieId: { userId: auth.user.id, movieId: id } },
+    }) : null;
+    const watchLinks = movie.watchLinks.map(safeWatchLink).filter(url => url !== null)
+      .map(url => ({ href: url.href, label: url.hostname }));
+    return {
+      ...auth, title: movie.title, movie, favorite, plusActive, watchLinks,
+      actors: movie.actors.join(', '), directors: movie.directors.join(', '),
+      releaseDate: movie.premiereOn && dateKey(movie.premiereOn),
+      entry, watchedOn: entry?.watchedOn && dateKey(entry.watchedOn), today: dateKey(new Date()),
+      journalStatuses, reviews: reviews.map(review => ({ ...review, canManage: review.userId === auth.user?.id })), ownReview: reviews.some(review => review.userId === auth.user?.id) };
   }
 
   @Get(':id/edit')
@@ -117,7 +153,10 @@ export class MoviesController {
     return res.render('movie-form', {
       ...auth,
       title: `Редактировать: ${movie.title}`,
-      movie,
+      movie: {
+        ...movie, actorNames: movie.actors.join(', '), directorNames: movie.directors.join(', '),
+        releaseDate: movie.premiereOn && dateKey(movie.premiereOn), providerUrls: movie.watchLinks.join('\n'),
+      },
       genres,
       formAction: `/movies/${movie.id}/edit`,
       isEdit: true,
@@ -125,7 +164,7 @@ export class MoviesController {
   }
 
   @Post(':id/edit')
-  @UseInterceptors(FileInterceptor('poster'))
+  @UseInterceptors(FileInterceptor('poster', { limits: { fileSize: 5_000_000, files: 1 } }))
   async updateMovie(
     @Req() req: Request,
     @Param('id',ParseIntPipe) id: number,
@@ -133,7 +172,7 @@ export class MoviesController {
     @UploadedFile(
       new ParseFilePipe({
         fileIsRequired: false,
-        validators: [new MaxFileSizeValidator({ maxSize: 5_000_000 })],
+        validators: [new MaxFileSizeValidator({ maxSize: 5_000_000 }), new FileTypeValidator({ fileType: /^image\/(jpeg|png|webp|gif)$/ })],
       }),
     )
     poster: Express.Multer.File | undefined,

@@ -6,6 +6,7 @@ import EmailPassword from 'supertokens-node/recipe/emailpassword';
 import Session from 'supertokens-node/recipe/session';
 import { Role } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service';
+import { UsersService } from '../users/users.service';
 
 const userSelect = {
   id: true,
@@ -16,38 +17,37 @@ const userSelect = {
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly users: UsersService) {}
 
   async login(email: string, password: string, req?: Request, res?: Response,) {
-    const result = await EmailPassword.signIn('public', email, password);
+    const result = await EmailPassword.signIn('public', email.trim().toLowerCase(), password);
 
     if (result.status === 'WRONG_CREDENTIALS_ERROR') {
       return null;
     }
 
-    await this.createSuperTokensSession(req, res, result.recipeUserId);
-
-    return this.syncLocalUser({
+    const user = await this.users.syncSuperTokensUser({
       superTokensUserId: result.user.id,
       email: result.user.emails[0] ?? email,
       name: result.user.emails[0]?.split('@')[0],
     });
+    await this.createSuperTokensSession(req, res, result.recipeUserId);
+    return user;
   }
 
   async register(name: string, email: string, password: string, req?: Request, res?: Response,) {
+    email = email.trim().toLowerCase();
+    const existing = await this.prisma.user.findUnique({ where: { email }, select: { id: true } });
+    if (existing) throw new ConflictException('Пользователь с таким email уже существует');
     const result = await EmailPassword.signUp('public', email, password);
 
     if (result.status === 'EMAIL_ALREADY_EXISTS_ERROR') {
       throw new ConflictException('Пользователь с таким email уже существует');
     }
 
+    const user = await this.users.syncSuperTokensUser({ superTokensUserId: result.user.id, email, name: name.trim() });
     await this.createSuperTokensSession(req, res, result.recipeUserId);
-
-    return this.syncLocalUser({
-      superTokensUserId: result.user.id,
-      email,
-      name,
-    });
+    return user;
   }
 
   async getCurrentUser(req: Request, res?: Response) {
@@ -75,7 +75,7 @@ export class AuthService {
       return null;
     }
 
-    return this.syncLocalUser({
+    return this.users.syncSuperTokensUser({
       superTokensUserId,
       email,
       name: email.split('@')[0],
@@ -122,47 +122,6 @@ export class AuthService {
     this.clearSessionCookies(res);
   }
 
-  private async syncLocalUser(params: {
-    superTokensUserId: string;
-    email: string;
-    name?: string;
-  }) {
-    const existingBySuperTokensId = await this.prisma.user.findUnique({
-      where: { superTokensUserId: params.superTokensUserId },
-      select: userSelect,
-    });
-
-    if (existingBySuperTokensId) {
-      return existingBySuperTokensId;
-    }
-
-    const existingByEmail = await this.prisma.user.findUnique({
-      where: { email: params.email },
-      select: userSelect,
-    });
-
-    if (existingByEmail) {
-      return this.prisma.user.update({
-        where: { id: existingByEmail.id },
-        data: {
-          superTokensUserId: params.superTokensUserId,
-        },
-        select: userSelect,
-      });
-    }
-
-    return this.prisma.user.create({
-      data: {
-        email: params.email,
-        name: params.name || params.email.split('@')[0],
-        password: '',
-        role: Role.USER,
-        superTokensUserId: params.superTokensUserId,
-      },
-      select: userSelect,
-    });
-  }
-
   private async createSuperTokensSession(
     req: Request | undefined,
     res: Response | undefined,
@@ -177,11 +136,13 @@ export class AuthService {
   }
 
   private async getOptionalSession(req: Request, res?: Response) {
+    const checkDatabase = !['GET', 'HEAD', 'OPTIONS'].includes(req.method);
     try {
       if (res) {
         return await Session.getSession(req, res, {
           sessionRequired: false,
           antiCsrfCheck: false,
+          checkDatabase,
         });
       }
 
@@ -194,6 +155,7 @@ export class AuthService {
       return await Session.getSessionWithoutRequestResponse(accessToken, undefined, {
           sessionRequired: false,
           antiCsrfCheck: false,
+          checkDatabase,
         });
     } catch {
       return undefined;

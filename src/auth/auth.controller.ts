@@ -5,6 +5,14 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
+function loginDestination(next: unknown) {
+  if (next === 'plus') return '/subscribe';
+  if (typeof next === 'string' && /^group:[a-f0-9-]{36}$/i.test(next)) {
+    return '/subscribe/groups/' + next.slice(6);
+  }
+  return '/';
+}
+
 @ApiExcludeController()
 @Controller('auth')
 export class AuthController {
@@ -21,7 +29,7 @@ export class AuthController {
 
     return {
       title: 'Вход в Kino',
-      returnToPlus: next === 'plus',
+      next: loginDestination(next) !== '/' ? next : undefined,
       ...auth,
       errorMessage: error === '1' ? 'Неверный логин или пароль' : null,
     };
@@ -37,10 +45,12 @@ export class AuthController {
     );
 
     if (!user) {
-      return res.redirect(next === 'plus' ? '/auth/login?error=1&next=plus' : '/auth/login?error=1');
+      const query = new URLSearchParams({ error: '1' });
+      if (next && loginDestination(next) !== '/') query.set('next', next);
+      return res.redirect('/auth/login?' + query);
     }
 
-    return res.redirect(next === 'plus' ? '/subscribe' : '/');
+    return res.redirect(loginDestination(next));
   }
 
   @Post('logout')

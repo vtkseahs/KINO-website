@@ -24,6 +24,24 @@ export class MovieModel {
   @Field(() => String, { nullable: true, description: 'Ссылка на постер' })
   posterUrl?: string | null;
 
+  @Field(() => [String], { description: 'Актёры' })
+  actors: string[];
+
+  @Field(() => [String], { description: 'Режиссёры' })
+  directors: string[];
+
+  @Field(() => String, { nullable: true, description: 'Франшиза' })
+  franchise: string | null;
+
+  @Field(() => Date, { nullable: true, description: 'Дата премьеры' })
+  premiereOn: Date | null;
+
+  @Field({ description: 'Отметка о необычном кино' })
+  unusual: boolean;
+
+  @Field(() => [String], { description: 'Ссылки на онлайн-кинотеатры' })
+  watchLinks: string[];
+
   @Field({ description: 'Дата создания фильма' })
   createdAt: Date;
 

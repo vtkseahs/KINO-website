@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: kino-website
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm run start:render
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_CA_FILE
+        value: ca.pem
+      - key: SUPERTOKENS_CONNECTION_URI
+        sync: false
+      - key: SUPERTOKENS_API_KEY
+        sync: false
+      - key: YANDEX_S3_BUCKET
+        sync: false
+      - key: YANDEX_S3_PUBLIC_BASE_URL
+        sync: false
+      - key: YANDEX_S3_ACCESS_KEY_ID
+        sync: false
+      - key: YANDEX_S3_SECRET_ACCESS_KEY
+        sync: false

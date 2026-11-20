@@ -30,6 +30,24 @@ export class MovieResponseDto {
   @ApiProperty({ example: 'https://ex.ru/poster.jpg', nullable: true })
   posterUrl: string | null;
 
+  @ApiProperty({ type: [String] })
+  actors: string[];
+
+  @ApiProperty({ type: [String] })
+  directors: string[];
+
+  @ApiProperty({ type: String, nullable: true })
+  franchise: string | null;
+
+  @ApiProperty({ type: String, format: 'date-time', nullable: true })
+  premiereOn: Date | null;
+
+  @ApiProperty()
+  unusual: boolean;
+
+  @ApiProperty({ type: [String] })
+  watchLinks: string[];
+
   @ApiProperty({ type: GenreSummaryDto })
   genre: GenreSummaryDto;
 }

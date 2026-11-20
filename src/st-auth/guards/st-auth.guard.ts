@@ -43,6 +43,7 @@ export class SuperTokensAuthGuard implements CanActivate {
     try {
       session = await Session.getSession(req, res, {
         antiCsrfCheck: false,
+        checkDatabase: !['GET', 'HEAD', 'OPTIONS'].includes(req.method),
       });
     } catch {
       throw new UnauthorizedException('Пользователь не авторизован');

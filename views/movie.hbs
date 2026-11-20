@@ -21,6 +21,10 @@
         <p><strong>Длительность:</strong> {{movie.duration}} мин</p>
         <p><strong>Возрастной рейтинг:</strong> {{movie.ageRating}}</p>
         <p><strong>Жанр:</strong> {{movie.genre.name}}</p>
+        {{#if actors}}<p><strong>Актёры:</strong> {{actors}}</p>{{/if}}
+        {{#if directors}}<p><strong>Режиссёры:</strong> {{directors}}</p>{{/if}}
+        {{#if movie.franchise}}<p><strong>Франшиза:</strong> {{movie.franchise}}</p>{{/if}}
+        {{#if releaseDate}}<p><strong>Премьера:</strong> <time datetime="{{releaseDate}}">{{releaseDate}}</time></p>{{/if}}
       </div>
     </div>
     <div class="movie-actions">
@@ -37,6 +41,30 @@
       <a href="/movies" class="button button--danger">Назад к каталогу</a>
     </div>
   </section>
+  {{#if watchLinks}}
+    <section class="profile-section"><h2>Где посмотреть</h2>
+      <ul class="provider-links">{{#each watchLinks}}<li><a href="{{href}}" rel="external noopener noreferrer" target="_blank">{{label}}</a></li>{{/each}}</ul>
+    </section>
+  {{/if}}
+  {{#if plusActive}}
+    <section class="profile-section" id="journal-entry">
+      <h2>Мой кинодневник</h2>
+      <form class="entity-form" action="/subscribe/journal/{{movie.id}}" method="post">
+        <div class="form-field"><label for="journal-status">Статус</label>
+          <select id="journal-status" name="status">
+            {{#each journalStatuses}}<option value="{{value}}" {{#ifEquals value ../entry.status}}selected{{/ifEquals}}>{{label}}</option>{{/each}}
+          </select>
+        </div>
+        <div class="form-field"><label for="journal-date">Дата последнего просмотра</label><input id="journal-date" name="watchedOn" type="date" max="{{today}}" value="{{watchedOn}}"></div>
+        <div class="form-field"><label for="journal-notes">Личные заметки</label><textarea id="journal-notes" name="notes" maxlength="2000">{{entry.notes}}</textarea></div>
+        <div class="form-field"><label for="journal-impression">Впечатление</label><input id="journal-impression" name="impression" maxlength="500" value="{{entry.impression}}"></div>
+        <div class="form-field"><label for="journal-company">С кем смотрели</label><input id="journal-company" name="company" maxlength="150" value="{{entry.company}}"></div>
+        <button class="button" type="submit">Сохранить в дневник</button>
+      </form>
+    </section>
+  {{else}}
+    <p><a href="/subscribe">Вести кинодневник с КИНО Plus</a></p>
+  {{/if}}
   <section class="profile-section"><h2>Отзывы зрителей</h2><p><a href="/reviews/movie/{{movie.id}}">Открыть обсуждение фильма</a></p>
     {{#each reviews}}<article class="profile-card"><h3>{{user.name}} · {{rating}}/10</h3><p>{{comment}}</p>{{#if canManage}}<a href="/reviews/{{id}}/edit">Изменить</a><form action="/reviews/{{id}}/delete" method="POST"><button class="button" type="submit">Удалить</button></form>{{/if}}</article>{{else}}<p>Отзывов пока нет. Будьте первым!</p>{{/each}}
     {{#if isAuth}}{{#unless ownReview}}<h3>Ваш отзыв</h3><form action="/reviews/add" method="POST" class="entity-form"><input type="hidden" name="movieId" value="{{movie.id}}"><div class="form-field"><label for="rating">Оценка от 1 до 10</label><input id="rating" name="rating" type="number" min="1" max="10" step="1" required></div><div class="form-field"><label for="comment">Отзыв</label><textarea id="comment" name="comment" required></textarea></div><button class="button" type="submit">Опубликовать</button></form>{{/unless}}{{else}}<p><a href="/auth/login">Войдите</a>, чтобы оставить отзыв.</p>{{/if}}
